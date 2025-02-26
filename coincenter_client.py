@@ -6,7 +6,7 @@ Números de aluno: XXXXX XXXXX
 
 import sys
 from net_client import *
-from coincenter_data import ClientController, MANAGER_SUPPORTED_COMMANDS, USER_SUPPORTED_COMMANDS
+from coincenter_data import MANAGER_SUPPORTED_COMMANDS, USER_SUPPORTED_COMMANDS
 
 USER_ID = 0
 client = None
@@ -33,6 +33,8 @@ def show_manager_menu():
     # concatenates the command with this user's id
     request = command + ";0"
     client.send(request.encode())
+    
+    # TODO implementar o recebimento da resposta do servidor
             
 def show_user_menu():
     
@@ -55,6 +57,8 @@ def show_user_menu():
     # concatenates the command with this user's id
     request = command + f"{USER_ID}"
     client.send(request.encode())
+    
+    # TODO implementar o recebimento da resposta do servidor
 
 def main():
     
