@@ -4,6 +4,7 @@ Grupo: XX
 Números de aluno: XXXXX XXXXX
 """
 import socket as s
+import sys
 
 def create_tcp_server_socket(address='localhost', port=9999, queue_size=1):
     try:
@@ -12,12 +13,14 @@ def create_tcp_server_socket(address='localhost', port=9999, queue_size=1):
         sock.listen(queue_size)
         return sock
     except:
-        print("An error occurred during the creation of server socket")
-
+        print("An error occurred during the creation of server socket.")
+        sys.exit(1)
+        
 def create_tcp_client_socket(address='localhost', port=9999):
     try:
         sock = s.socket(s.AF_INET, s.SOCK_STREAM)
         sock.connect((address, port))
         return sock
     except:
-        print("An error occurred during the creation of the client socket")
+        print("An error occurred during the creation of the client socket.")
+        sys.exit(1)

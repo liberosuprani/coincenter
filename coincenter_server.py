@@ -18,20 +18,24 @@ def handle_shutdown(signum, frame):
     sys.exit(0)
 
 def main():
+    
+    global server
+    signal.signal(signal.SIGINT, handle_shutdown)
+    
     if len(sys.argv) != 3:
         print("Usage: python3 coincenter_server.py server_ip server_port")
         sys.exit(1)
     
-    global server
-
     server_ip = sys.argv[1]
     server_port = int(sys.argv[2])
 
     server = NetServer(server_ip, server_port)
 
-    signal.signal(signal.SIGINT, handle_shutdown)
-
-    ### código ###
+    (connection_socket, (addr, port)) = server.accept()
+    request = server.recv(connection_socket)
+    
+    ClientController.process_request(request.decode())
+    #TODO resto da implementação do código a rodar no servidor
 
 if __name__ == "__main__":
     main()

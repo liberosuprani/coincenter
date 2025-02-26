@@ -3,17 +3,21 @@ Aplicações Distribuídas - Projeto 1 - net_client.py
 Grupo: XX
 Números de aluno: XXXXX XXXXX
 """
-from sock_utils import *
+import sock_utils
 
 class NetClient:
     def __init__(self, id, host, port):
-        pass
+        self._id = id
+        self._host = host
+        self._port = port
+        self._socket = sock_utils.create_tcp_client_socket(host, port)
      
     def send(self, data):
-        pass
+        self._socket.sendall(data)
 
     def recv(self):
-        pass
+        data = self._socket.recv(1024)
+        return data
     
     def close(self):
-        pass
+        self._socket.close()
