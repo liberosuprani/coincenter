@@ -34,6 +34,7 @@ def main():
     request = server.recv(connection_socket)
     
     response = ClientController.process_request(request.decode())
+    server.send(response.encode(), connection_socket)
     #TODO resto da implementação do código a rodar no servidor
 
 if __name__ == "__main__":

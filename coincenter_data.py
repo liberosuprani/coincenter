@@ -61,17 +61,18 @@ class AssetController:
     def remove_asset(symbol:str):
         if symbol not in AssetController.assets.keys():
             print("Could not remove asset: asset does not exist.")
-            return
+            return False
         del AssetController.assets[symbol]
-
+        return True
+    
     @staticmethod
     def add_asset(symbol:str,name:str,price:float,available_supply:int):
         if symbol in AssetController.assets.keys():
             print("Could not add asset: asset already exists.")
-            return
-        
+            return False
         # adds a new asset to the list of assets in the AssetController dict
         AssetController.assets[symbol] = Asset(symbol, name, price, available_supply)
+        return True
 
 
 class Client(ABC):
@@ -96,10 +97,18 @@ class User(Client):
     def buy_asset(self, asset_symbol:str, quantity:float) -> bool:
         try:
             asset = AssetController.assets[asset_symbol]
+            
+            # user doesnt have enough balance to buy this quantity of asset
+            if self._balance < asset._price * quantity:
+                print("Could not buy asset: not enough balance.")
+                return False
+            
             asset_bought = asset.decrease_quantity(quantity)
             
+            # asset is not available in this quantity
             if not asset_bought:
-                print("Could not buy asset: quantity unavaiable")
+                print("Could not buy asset: quantity unavaiable.")
+                return False
             
             # if user already has this asset, increase the quantity,
             # else, creates a new entry in user's holdings for this asset
@@ -107,52 +116,101 @@ class User(Client):
                 self._holdings[asset_symbol] += quantity
             else:
                 self._holdings[asset_symbol] = quantity
+            return True
         except KeyError:
             print("Could not buy asset: asset does not exist")
+            return False
             
     def sell_asset(self, asset_symbol:str, quantity:float) -> bool:
         try:
             if asset_symbol not in self._holdings.keys():
-                print("Could not sell asset: User does not own this type of asset.")
-                return
+                print("Could not sell asset: user does not own this type of asset.")
+                return False
             
             if quantity < 0 or quantity > self._holdings[asset_symbol]:
                 print("Could not sell asset: invalid quantity was given.")
-                return 
-             
+                return False
+            
             self._holdings[asset_symbol] -= quantity
             
             # increases the available quantity of this asset in the AssetController class
             asset = AssetController.assets[asset_symbol]
             asset.increase_quantity(quantity)  
+            return True
         except KeyError:
             print("Could not sell asset: asset does not exist.")
-
+            return False
+        
     def deposite(self,amount):
         self._balance += amount
+        return True
 
     def withdraw(self,amount):
         if amount <= self._balance:
             self._balance -= amount
+            return True
         else:
             print("Could not withdraw: unavailable amount.")
+            return False
            
-    
     def process_request(self, request: str) -> str:
         response = ""
         request = request.split(";")
+        command = request[0]
         
-        # TODO fazer todos os tipos de request
-        if request[0] == "GET_ALL_ASSETS":
+        if command == "GET_ALL_ASSETS":
             response += f"ALL_ASSETS;"
             for asset_symbol in self._holdings.keys():
                 asset = AssetController.assets[asset_symbol]
                 response += f"{asset.__str__()}:"
             response = response[:-1]
-        if request[0] == "GET_BALANCE":
-            response += f""
-
-
+            
+        if command == "GET_BALANCE":
+            response += f"BALANCE;{self._balance};"
+            for asset_symbol in self._holdings.keys():
+                asset = AssetController.assets[asset_symbol]
+                asset_string = str(asset.__str__())
+                
+                # gets the parameters without price and avaliable quantity of the asset
+                asset_string = asset_string.split(";")[:2]
+                
+                # adds the symbol and name of asset to the response string
+                for i in asset_string:
+                    response += f"{i};"
+                    
+                # adds the quantity owned by user
+                response += f"{self._holdings[asset_symbol]}:"
+                  
+        if command == "BUY":
+            was_bought = self.buy_asset(request[1], request[2])
+            if was_bought:
+                response = "OK"
+            else:
+                response = "NOK"
+            
+        if command == "SELL":
+            was_sold = self.sell_asset(request[1], request[2])
+            if was_sold:
+                response = "OK"
+            else:
+                response = "NOK"
+                
+        if command == "DEPOSIT":
+            was_deposited = self.deposite(request[1])
+            if was_deposited:
+                response = "OK"
+            else:
+                response = "NOK"
+                
+        if command == "WITHDRAW":
+            was_withdrawn = self.withdraw(request[1])
+            if was_withdrawn:
+                response = "OK"
+            else:
+                response = "NOK"
+        return response
+        
+        
 class Manager(Client):
     def __init__(self, user_id):
         super().__init__(user_id)
