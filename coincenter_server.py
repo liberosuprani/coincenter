@@ -9,7 +9,6 @@ import signal
 from net_server import *
 from coincenter_data import *
 
-### código do programa principal ###
 server = None
 
 def handle_shutdown(signum, frame):
@@ -34,7 +33,7 @@ def main():
     (connection_socket, (addr, port)) = server.accept()
     request = server.recv(connection_socket)
     
-    ClientController.process_request(request.decode())
+    response = ClientController.process_request(request.decode())
     #TODO resto da implementação do código a rodar no servidor
 
 if __name__ == "__main__":

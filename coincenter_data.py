@@ -120,8 +120,8 @@ class User(Client):
                 print("Could not sell asset: invalid quantity was given.")
                 return 
              
-            
             self._holdings[asset_symbol] -= quantity
+            
             # increases the available quantity of this asset in the AssetController class
             asset = AssetController.assets[asset_symbol]
             asset.increase_quantity(quantity)  
@@ -136,18 +136,29 @@ class User(Client):
             self._balance -= amount
         else:
             print("Could not withdraw: unavailable amount.")
-            
-    def process_request(self, request) -> str:
-        # TODO
-        pass
+           
+    
+    def process_request(self, request: str) -> str:
+        response = ""
+        request = request.split(";")
+        
+        # TODO fazer todos os tipos de request
+        if request[0] == "GET_ALL_ASSETS":
+            response += f"ALL_ASSETS;"
+            for asset_symbol in self._holdings.keys():
+                asset = AssetController.assets[asset_symbol]
+                response += f"{asset.__str__()}:"
+            response = response[:-1]
+        if request[0] == "GET_BALANCE":
+            response += f""
 
 
 class Manager(Client):
     def __init__(self, user_id):
         super().__init__(user_id)
 
+    # TODO
     def process_request(self, request):
-        # TODO
         pass
 
 
@@ -155,8 +166,8 @@ class ClientController:
     clients:Dict[int,Client] = {0:Manager(0)}
 
     @staticmethod
-    def process_request(request:str)->str:
-        client_id = request.split(";")[-1]
+    def process_request(request:str) -> str:
+        client_id = request.split(";")[-1]  # gets the id, which is the last arg in the request
         
         if client_id not in ClientController.clients:
             ClientController.clients[client_id] = User(client_id)

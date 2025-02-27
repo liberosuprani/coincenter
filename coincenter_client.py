@@ -11,6 +11,37 @@ from coincenter_data import MANAGER_SUPPORTED_COMMANDS, USER_SUPPORTED_COMMANDS
 USER_ID = 0
 client = None
 
+def manager_command_to_request(command):
+    request = command
+    args = []
+    if command == "ADD_ASSET":
+        args.append(input("Asset name > "))     # asset's name
+        args.append(input("Asset symbol > "))    # asset's symbol 
+        args.append(float(input("Asset price > ")))   # asset's price (cast to float)
+        args.append(float(input("Available amount > ")))    # asset's available amount
+    if command == "REMOVE_ASSET":
+        args.append(input("Asset symbol > ")) # asset's symbol
+    for arg in args:
+        request += f";{arg}"
+    request += ";0"     # manager id
+    return request
+
+
+def user_command_to_request(command):
+    global USER_ID
+    request = command
+    args = []
+    if command == "BUY" or command == "SELL":
+        args.append(input("Asset symbol > "))   # asset's symbol 
+        args.append(float(input("Quantity > ")))    # quantity to buy / sell
+    if command == "DEPOSIT" or command == "WITHDRAW":
+        args.append(float(input("Amount")))    # amount to deposit / withdraw
+    for arg in args:
+        request += f";{arg}"
+    request += f";{USER_ID}"
+    return request
+
+
 def show_manager_menu():
     
     global client
@@ -18,7 +49,6 @@ def show_manager_menu():
     print("1) Add asset\n2) List all assets\n3) Remove an asset\n0) Exit")
     command_number = int(input("command > "))
     
-    print(f"teste: {MANAGER_SUPPORTED_COMMANDS.keys()}")
     while command_number not in MANAGER_SUPPORTED_COMMANDS.keys():
         print("Command does not exist. Try again.")
         command_number = int(input("command > "))
@@ -30,11 +60,11 @@ def show_manager_menu():
         client.close()
         return
     
-    # concatenates the command with this user's id
-    request = command + ";0"
-    client.send(request.encode())
+    request = manager_command_to_request(command)
     
+    client.send(request.encode())
     # TODO implementar o recebimento da resposta do servidor
+  
             
 def show_user_menu():
     
@@ -54,11 +84,11 @@ def show_user_menu():
         client.close()
         return
     
-    # concatenates the command with this user's id
-    request = command + f"{USER_ID}"
-    client.send(request.encode())
+    request = user_command_to_request(command)
     
+    client.send(request.encode())
     # TODO implementar o recebimento da resposta do servidor
+
 
 def main():
     
