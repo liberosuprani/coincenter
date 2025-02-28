@@ -29,13 +29,25 @@ def main():
     server_port = int(sys.argv[2])
 
     server = NetServer(server_ip, server_port)
-
     (connection_socket, (addr, port)) = server.accept()
-    request = server.recv(connection_socket)
+    id_received = server.recv(connection_socket).decode()
+    print(f"Client connected: [Id: {id_received}, Address: {addr}, Port: {port}]")
     
-    response = ClientController.process_request(request.decode())
-    server.send(response.encode(), connection_socket)
-    #TODO resto da implementação do código a rodar no servidor
+    while True:
+        request = server.recv(connection_socket)
+        request = request.decode()
+        
+        if request == "":   # client closed the connection
+            print("Client disconnected  ")
+            connection_socket.close()
+            (connection_socket, (addr, port)) = server.accept()
+            id_received = server.recv(connection_socket).decode()
+            print(f"Client connected: [Id: {id_received}, Address: {addr}, Port: {port}")
+        else:
+            print(f"RECV: {request}")
+            response = ClientController.process_request(request)
+            print(f"SENT: {response}")
+            server.send(response.encode(), connection_socket)
 
 if __name__ == "__main__":
     main()

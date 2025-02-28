@@ -31,7 +31,8 @@ class Asset:
         self._available_supply = available_supply
 
     def __str__(self):
-        pass
+        result = f"{self._name};{self._symbol};{self._price};{self._available_supply}"
+        return result
 
     def check_availability(self, quantity:int) -> bool:
         # returns True if quantity is greater than 0 and not greater than available_supply
@@ -52,9 +53,10 @@ class AssetController:
 
     @staticmethod
     def list_all_assets()->str:
-        output = ""
+        output = "ALL_ASSETS;"
         for asset in AssetController.assets.values():
-            output += f"{asset.__str__()}\n"
+            output += f"{asset.__str__()}:"
+        output = output[:-1]
         return output
             
     @staticmethod
@@ -215,19 +217,44 @@ class Manager(Client):
     def __init__(self, user_id):
         super().__init__(user_id)
 
-    # TODO
     def process_request(self, request):
-        pass
-
+        response = ""
+        request = request.split(";")
+        command = request[0]    # gets the first index, which is the command itself
+        
+        if command == "ADD_ASSET":
+            asset_name = request[1]
+            asset_symbol = request[2]
+            asset_price = request[3]
+            asset_available_supply = request[4]
+            
+            was_asset_added = AssetController.add_asset(asset_symbol, asset_name, asset_price, asset_available_supply)
+            
+            if was_asset_added:
+                response = "OK"
+            else:
+                response = "NOK"
+                
+        if command == "GET_ALL_ASSETS":
+            response = AssetController.list_all_assets()
+        
+        if command == "REMOVE_ASSET":
+            asset_symbol = request[1]
+            was_asset_removed = AssetController.remove_asset(asset_symbol)
+            if was_asset_removed:
+                response = "OK"
+            else:
+                response = "NOK"
+        return response
 
 class ClientController:
     clients:Dict[int,Client] = {0:Manager(0)}
 
     @staticmethod
     def process_request(request:str) -> str:
-        client_id = request.split(";")[-1]  # gets the id, which is the last arg in the request
-        
-        if client_id not in ClientController.clients:
+        client_id = int(request.split(";")[-1])  # gets the id, which is the last arg in the request
+        if client_id not in ClientController.clients.keys():
             ClientController.clients[client_id] = User(client_id)
         
-        return ClientController.clients[client_id].process_request(request)            
+        result = ClientController.clients[client_id].process_request(request)            
+        return result

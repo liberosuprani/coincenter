@@ -46,47 +46,53 @@ def show_manager_menu():
     
     global client
     
-    print("1) Add asset\n2) List all assets\n3) Remove an asset\n0) Exit")
-    command_number = int(input("command > "))
-    
-    while command_number not in MANAGER_SUPPORTED_COMMANDS.keys():
-        print("Command does not exist. Try again.")
+    while True: 
+        print("1) Add asset\n2) List all assets\n3) Remove an asset\n0) Exit")
         command_number = int(input("command > "))
         
-    # gets the proper command from the dictionary with supported commands 
-    command = MANAGER_SUPPORTED_COMMANDS[command_number]
-    
-    if command == "EXIT":
-        client.close()
-        return
-    
-    request = manager_command_to_request(command)
-    
-    client.send(request.encode())
-    # TODO implementar o recebimento da resposta do servidor
+        while command_number not in MANAGER_SUPPORTED_COMMANDS.keys():
+            print("Command does not exist. Try again.")
+            command_number = int(input("command > "))
+            
+        # gets the proper command from the dictionary with supported commands 
+        command = MANAGER_SUPPORTED_COMMANDS[command_number]
+        
+        if command == "EXIT":
+            client.close()
+            return
+        
+        request = manager_command_to_request(command)
+        
+        print(f"SENT: {request}")
+        request = request.encode()
+        client.send(request)
+        
+        response = client.recv().decode()
+        print(f"RECV: {response}")
   
             
 def show_user_menu():
     
     global USER_ID, client
     
-    print("1) List my assets\n2) See my balance\n3) Buy an asset\n4) Sell an asset\n5) Deposit\n6) Withdraw\n0) Exit")
-    command_number = int(input("command > "))
-    
-    while command_number not in USER_SUPPORTED_COMMANDS.keys():
-        print("Command does not exist. Try again.")
+    while True:
+        print("1) List my assets\n2) See my balance\n3) Buy an asset\n4) Sell an asset\n5) Deposit\n6) Withdraw\n0) Exit")
         command_number = int(input("command > "))
         
-    # gets the proper command from the dictionary with supported commands 
-    command = USER_SUPPORTED_COMMANDS[command_number]
-    
-    if command == "EXIT":
-        client.close()
-        return
-    
-    request = user_command_to_request(command)
-    
-    client.send(request.encode())
+        while command_number not in USER_SUPPORTED_COMMANDS.keys():
+            print("Command does not exist. Try again.")
+            command_number = int(input("command > "))
+            
+        # gets the proper command from the dictionary with supported commands 
+        command = USER_SUPPORTED_COMMANDS[command_number]
+        
+        if command == "EXIT":
+            client.close()
+            return
+        
+        request = user_command_to_request(command)
+        
+        client.send(request.encode())
     # TODO implementar o recebimento da resposta do servidor
 
 
