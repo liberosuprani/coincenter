@@ -35,7 +35,7 @@ def user_command_to_request(command):
         args.append(input("Asset symbol > "))   # asset's symbol 
         args.append(float(input("Quantity > ")))    # quantity to buy / sell
     if command == "DEPOSIT" or command == "WITHDRAW":
-        args.append(float(input("Amount")))    # amount to deposit / withdraw
+        args.append(float(input("Amount > ")))    # amount to deposit / withdraw
     for arg in args:
         request += f";{arg}"
     request += f";{USER_ID}"
@@ -51,7 +51,7 @@ def show_manager_menu():
         command_number = int(input("command > "))
         
         while command_number not in MANAGER_SUPPORTED_COMMANDS.keys():
-            print("Command does not exist. Try again.")
+            print("ERROR: Command does not exist. Try again.")
             command_number = int(input("command > "))
             
         # gets the proper command from the dictionary with supported commands 
@@ -63,9 +63,8 @@ def show_manager_menu():
         
         request = manager_command_to_request(command)
         
+        client.send(request.encode())
         print(f"SENT: {request}")
-        request = request.encode()
-        client.send(request)
         
         response = client.recv().decode()
         print(f"RECV: {response}")
@@ -76,7 +75,7 @@ def show_user_menu():
     global USER_ID, client
     
     while True:
-        print("1) List my assets\n2) See my balance\n3) Buy an asset\n4) Sell an asset\n5) Deposit\n6) Withdraw\n0) Exit")
+        print("1) List all assets\n2) See my balance\n3) Buy an asset\n4) Sell an asset\n5) Deposit\n6) Withdraw\n0) Exit")
         command_number = int(input("command > "))
         
         while command_number not in USER_SUPPORTED_COMMANDS.keys():
@@ -93,7 +92,10 @@ def show_user_menu():
         request = user_command_to_request(command)
         
         client.send(request.encode())
-    # TODO implementar o recebimento da resposta do servidor
+        print(f"SENT: {request}")
+        
+        response = client.recv().decode()
+        print(f"RECV: {response}")
 
 
 def main():

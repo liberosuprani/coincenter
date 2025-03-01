@@ -99,7 +99,8 @@ class User(Client):
     def buy_asset(self, asset_symbol:str, quantity:float) -> bool:
         try:
             asset = AssetController.assets[asset_symbol]
-            
+            print(f"Teste; tipo {type(asset._price)}")
+            print(f"Teste; tipo {type(quantity)}")
             # user doesnt have enough balance to buy this quantity of asset
             if self._balance < asset._price * quantity:
                 print("Could not buy asset: not enough balance.")
@@ -118,6 +119,11 @@ class User(Client):
                 self._holdings[asset_symbol] += quantity
             else:
                 self._holdings[asset_symbol] = quantity
+                
+            # decreases the balance according to the amount of this asset
+            # that was bought
+            self._balance -= asset._price*quantity
+            
             return True
         except KeyError:
             print("Could not buy asset: asset does not exist")
@@ -135,8 +141,16 @@ class User(Client):
             
             self._holdings[asset_symbol] -= quantity
             
-            # increases the available quantity of this asset in the AssetController class
             asset = AssetController.assets[asset_symbol]
+            
+            # increases the user's balance according to the amount sold
+            self._balance += asset._price * quantity
+            
+            # remove asset entry in the table if the quantity owned is 0
+            if self._holdings[asset_symbol] == 0:
+                del self._holdings[asset_symbol]
+            
+            # increases the available quantity of this asset in the AssetController class
             asset.increase_quantity(quantity)  
             return True
         except KeyError:
@@ -156,61 +170,49 @@ class User(Client):
             return False
            
     def process_request(self, request: str) -> str:
-        response = ""
+        result = ""
         request = request.split(";")
         command = request[0]
         
         if command == "GET_ALL_ASSETS":
-            response += f"ALL_ASSETS;"
-            for asset_symbol in self._holdings.keys():
-                asset = AssetController.assets[asset_symbol]
-                response += f"{asset.__str__()}:"
-            response = response[:-1]
+            result += f"ALL_ASSETS;"
+            result = AssetController.list_all_assets()
             
         if command == "GET_BALANCE":
-            response += f"BALANCE;{self._balance};"
+            result += f"BALANCE;€{self._balance};"
             for asset_symbol in self._holdings.keys():
                 asset = AssetController.assets[asset_symbol]
                 asset_string = str(asset.__str__())
                 
                 # gets the parameters without price and avaliable quantity of the asset
                 asset_string = asset_string.split(";")[:2]
+                print(f"teste asset_string: {asset_string}")
                 
                 # adds the symbol and name of asset to the response string
                 for i in asset_string:
-                    response += f"{i};"
-                    
+                    result += f"{i};"
+                
                 # adds the quantity owned by user
-                response += f"{self._holdings[asset_symbol]}:"
-                  
+                result += f"{self._holdings[asset_symbol]}:"
+            result = result[:-1]
+            
         if command == "BUY":
-            was_bought = self.buy_asset(request[1], request[2])
-            if was_bought:
-                response = "OK"
-            else:
-                response = "NOK"
+            was_bought = self.buy_asset(request[1], float(request[2]))
+            result = was_bought
             
         if command == "SELL":
-            was_sold = self.sell_asset(request[1], request[2])
-            if was_sold:
-                response = "OK"
-            else:
-                response = "NOK"
+            was_sold = self.sell_asset(request[1], float(request[2]))
+            result = was_sold
                 
         if command == "DEPOSIT":
-            was_deposited = self.deposite(request[1])
-            if was_deposited:
-                response = "OK"
-            else:
-                response = "NOK"
+            was_deposited = self.deposite(float(request[1]))
+            result = was_deposited
                 
         if command == "WITHDRAW":
-            was_withdrawn = self.withdraw(request[1])
-            if was_withdrawn:
-                response = "OK"
-            else:
-                response = "NOK"
-        return response
+            was_withdrawn = self.withdraw(float(request[1]))
+            result = was_withdrawn
+            
+        return result
         
         
 class Manager(Client):
@@ -218,34 +220,28 @@ class Manager(Client):
         super().__init__(user_id)
 
     def process_request(self, request):
-        response = ""
+        result = ""
         request = request.split(";")
         command = request[0]    # gets the first index, which is the command itself
         
         if command == "ADD_ASSET":
             asset_name = request[1]
             asset_symbol = request[2]
-            asset_price = request[3]
-            asset_available_supply = request[4]
+            asset_price = float(request[3])
+            asset_available_supply = float(request[4])
             
             was_asset_added = AssetController.add_asset(asset_symbol, asset_name, asset_price, asset_available_supply)
-            
-            if was_asset_added:
-                response = "OK"
-            else:
-                response = "NOK"
+            result = was_asset_added
                 
         if command == "GET_ALL_ASSETS":
-            response = AssetController.list_all_assets()
+            result = AssetController.list_all_assets()
         
         if command == "REMOVE_ASSET":
             asset_symbol = request[1]
             was_asset_removed = AssetController.remove_asset(asset_symbol)
-            if was_asset_removed:
-                response = "OK"
-            else:
-                response = "NOK"
-        return response
+            result = was_asset_removed
+            
+        return result
 
 class ClientController:
     clients:Dict[int,Client] = {0:Manager(0)}

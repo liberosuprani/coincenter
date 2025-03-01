@@ -37,15 +37,21 @@ def main():
         request = server.recv(connection_socket)
         request = request.decode()
         
-        if request == "":   # client closed the connection
+        # if the request is an empty string, it means the client has closed the connection
+        # then, this will wait for another connection
+        if request == "":   
             print("Client disconnected  ")
             connection_socket.close()
             (connection_socket, (addr, port)) = server.accept()
             id_received = server.recv(connection_socket).decode()
-            print(f"Client connected: [Id: {id_received}, Address: {addr}, Port: {port}")
+            print(f"Client connected: [Id: {id_received}, Address: {addr}, Port: {port}]")
         else:
-            print(f"RECV: {request}")
+            print(f"RECV: {request}") 
             response = ClientController.process_request(request)
+            if response == False:
+                response = "NOK"
+            elif response == True:
+                response = "OK"
             print(f"SENT: {response}")
             server.send(response.encode(), connection_socket)
 
