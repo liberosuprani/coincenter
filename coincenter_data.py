@@ -1,9 +1,8 @@
 """
 Aplicações Distribuídas - Projeto 1 - coincenter_data.py
-Grupo: XX
-Números de aluno: XXXXX XXXXX
+Número de aluno: 62220
 """
-from typing import Dict,List
+from typing import Dict
 from abc import ABC, abstractmethod
 
 MANAGER_SUPPORTED_COMMANDS = {
@@ -92,24 +91,36 @@ class User(Client):
         self._balance = 0.0
         self._holdings: Dict[str, float] = {}
 
-    # TODO
     def __str__(self):
-        pass
+        output = f"BALANCE;€{self._balance};"
+        for asset_symbol in self._holdings.keys():
+            asset = AssetController.assets[asset_symbol]
+            asset_string = str(asset.__str__())
+            
+            # gets the parameters without price and avaliable quantity of the asset
+            asset_string = asset_string.split(";")[:2]
+            
+            # adds the symbol and name of asset to the response string
+            for i in asset_string:
+                output += f"{i};"
+            
+            # adds the quantity owned by user
+            output += f"{self._holdings[asset_symbol]}:"
+        output = output[:-1]
+        return output
 
     def buy_asset(self, asset_symbol:str, quantity:float) -> bool:
         try:
             asset = AssetController.assets[asset_symbol]
-            print(f"Teste; tipo {type(asset._price)}")
-            print(f"Teste; tipo {type(quantity)}")
             # user doesnt have enough balance to buy this quantity of asset
             if self._balance < asset._price * quantity:
                 print("Could not buy asset: not enough balance.")
                 return False
             
-            asset_bought = asset.decrease_quantity(quantity)
+            was_asset_bought = asset.decrease_quantity(quantity)
             
             # asset is not available in this quantity
-            if not asset_bought:
+            if not was_asset_bought:
                 print("Could not buy asset: quantity unavaiable.")
                 return False
             
@@ -126,7 +137,7 @@ class User(Client):
             
             return True
         except KeyError:
-            print("Could not buy asset: asset does not exist")
+            print("Could not buy asset: asset does not exist.")
             return False
             
     def sell_asset(self, asset_symbol:str, quantity:float) -> bool:
@@ -175,26 +186,10 @@ class User(Client):
         command = request[0]
         
         if command == "GET_ALL_ASSETS":
-            result += f"ALL_ASSETS;"
             result = AssetController.list_all_assets()
             
         if command == "GET_BALANCE":
-            result += f"BALANCE;€{self._balance};"
-            for asset_symbol in self._holdings.keys():
-                asset = AssetController.assets[asset_symbol]
-                asset_string = str(asset.__str__())
-                
-                # gets the parameters without price and avaliable quantity of the asset
-                asset_string = asset_string.split(";")[:2]
-                print(f"teste asset_string: {asset_string}")
-                
-                # adds the symbol and name of asset to the response string
-                for i in asset_string:
-                    result += f"{i};"
-                
-                # adds the quantity owned by user
-                result += f"{self._holdings[asset_symbol]}:"
-            result = result[:-1]
+            result = self.__str__()
             
         if command == "BUY":
             was_bought = self.buy_asset(request[1], float(request[2]))
@@ -211,7 +206,12 @@ class User(Client):
         if command == "WITHDRAW":
             was_withdrawn = self.withdraw(float(request[1]))
             result = was_withdrawn
-            
+        
+        if result == True:
+            result = "OK"
+        elif result == False:
+            result = "NOK"
+         
         return result
         
         
@@ -231,7 +231,7 @@ class Manager(Client):
             asset_available_supply = float(request[4])
             
             was_asset_added = AssetController.add_asset(asset_symbol, asset_name, asset_price, asset_available_supply)
-            result = was_asset_added
+            result = f"OK;{asset_symbol}" if was_asset_added else "NOK"
                 
         if command == "GET_ALL_ASSETS":
             result = AssetController.list_all_assets()
@@ -239,7 +239,7 @@ class Manager(Client):
         if command == "REMOVE_ASSET":
             asset_symbol = request[1]
             was_asset_removed = AssetController.remove_asset(asset_symbol)
-            result = was_asset_removed
+            result = f"OK;{asset_symbol}" if was_asset_removed else "NOK"
             
         return result
 
@@ -249,6 +249,7 @@ class ClientController:
     @staticmethod
     def process_request(request:str) -> str:
         client_id = int(request.split(";")[-1])  # gets the id, which is the last arg in the request
+        
         if client_id not in ClientController.clients.keys():
             ClientController.clients[client_id] = User(client_id)
         

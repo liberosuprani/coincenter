@@ -1,7 +1,6 @@
 """
 Aplicações Distribuídas - Projeto 1 - net_client.py
-Grupo: XX
-Números de aluno: XXXXX XXXXX
+Número de aluno: 62220
 """
 import sock_utils
 

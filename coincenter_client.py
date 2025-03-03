@@ -1,7 +1,6 @@
 """
 Aplicações Distribuídas - Projeto 1 - coincenter_client.py
-Grupo: XX
-Números de aluno: XXXXX XXXXX
+Número de aluno: 62220
 """
 
 import sys

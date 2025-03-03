@@ -1,7 +1,6 @@
 """
 Aplicações Distribuídas - Projeto 1 - coincenter_server.py
-Grupo: XX
-Números de aluno: XXXXX XXXXX
+Número de aluno: 62220
 """
 
 import sys
@@ -30,6 +29,7 @@ def main():
 
     server = NetServer(server_ip, server_port)
     (connection_socket, (addr, port)) = server.accept()
+    
     id_received = server.recv(connection_socket).decode()
     print(f"Client connected: [Id: {id_received}, Address: {addr}, Port: {port}]")
     
@@ -38,9 +38,9 @@ def main():
         request = request.decode()
         
         # if the request is an empty string, it means the client has closed the connection
-        # then, this will wait for another connection
+        # then, it will wait for another connection
         if request == "":   
-            print("Client disconnected  ")
+            print("Client disconnected.")
             connection_socket.close()
             (connection_socket, (addr, port)) = server.accept()
             id_received = server.recv(connection_socket).decode()
@@ -48,12 +48,9 @@ def main():
         else:
             print(f"RECV: {request}") 
             response = ClientController.process_request(request)
-            if response == False:
-                response = "NOK"
-            elif response == True:
-                response = "OK"
-            print(f"SENT: {response}")
+            
             server.send(response.encode(), connection_socket)
+            print(f"SENT: {response}")
 
 if __name__ == "__main__":
     main()
