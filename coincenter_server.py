@@ -7,6 +7,7 @@ import sys
 import signal
 from net_server import *
 from coincenter_data import *
+import socket
 
 server = None
 
@@ -28,29 +29,32 @@ def main():
     server_port = int(sys.argv[2])
 
     server = NetServer(server_ip, server_port)
-    (connection_socket, (addr, port)) = server.accept()
-    
-    id_received = server.recv(connection_socket).decode()
-    print(f"Client connected: [Id: {id_received}, Address: {addr}, Port: {port}]")
-    
+
     while True:
-        request = server.recv(connection_socket)
-        request = request.decode()
-        
-        # if the request is an empty string, it means the client has closed the connection
-        # then, it will wait for another connection
-        if request == "":   
-            print("Client disconnected.")
-            connection_socket.close()
+        connection_socket = None
+        try:
             (connection_socket, (addr, port)) = server.accept()
             id_received = server.recv(connection_socket).decode()
             print(f"Client connected: [Id: {id_received}, Address: {addr}, Port: {port}]")
-        else:
-            print(f"RECV: {request}") 
-            response = ClientController.process_request(request)
             
-            server.send(response.encode(), connection_socket)
-            print(f"SENT: {response}")
-
+            while True:
+                request = server.recv(connection_socket)
+                request = request.decode()
+                
+                if request == "":
+                    print("Client disconnected.")
+                    break
+                
+                print(f"RECV: {request}") 
+                response = ClientController.process_request(request)
+                
+                server.send(response.encode(), connection_socket)
+                print(f"SENT: {response}")
+        except:
+            if connection_socket is not None:
+                connection_socket.close()
+            else:
+                break
+            
 if __name__ == "__main__":
     main()

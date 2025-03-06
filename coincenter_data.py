@@ -14,7 +14,7 @@ MANAGER_SUPPORTED_COMMANDS = {
 
 USER_SUPPORTED_COMMANDS = {
     1: "GET_ALL_ASSETS",
-    2: "GET_BALANCE",
+    2: "GET_ASSETS_BALANCE",
     3: "BUY",
     4: "SELL",
     5: "DEPOSIT",
@@ -55,7 +55,9 @@ class AssetController:
         output = "ALL_ASSETS;"
         for asset in AssetController.assets.values():
             output += f"{asset.__str__()}:"
-        output = output[:-1]
+            
+        if output != "ALL_ASSETS;":
+            output = output[:-1]
         return output
             
     @staticmethod
@@ -181,29 +183,31 @@ class User(Client):
             return False
            
     def process_request(self, request: str) -> str:
+        supported_commands = USER_SUPPORTED_COMMANDS
+        
         result = ""
         request = request.split(";")
         command = request[0]
         
-        if command == "GET_ALL_ASSETS":
+        if command == supported_commands[1]:
             result = AssetController.list_all_assets()
             
-        if command == "GET_BALANCE":
+        if command == supported_commands[2]:
             result = self.__str__()
             
-        if command == "BUY":
+        if command == supported_commands[3]:
             was_bought = self.buy_asset(request[1], float(request[2]))
             result = was_bought
             
-        if command == "SELL":
+        if command == supported_commands[4]:
             was_sold = self.sell_asset(request[1], float(request[2]))
             result = was_sold
                 
-        if command == "DEPOSIT":
+        if command == supported_commands[5]:
             was_deposited = self.deposite(float(request[1]))
             result = was_deposited
                 
-        if command == "WITHDRAW":
+        if command == supported_commands[6]:
             was_withdrawn = self.withdraw(float(request[1]))
             result = was_withdrawn
         
@@ -220,11 +224,13 @@ class Manager(Client):
         super().__init__(user_id)
 
     def process_request(self, request):
+        supported_commands = MANAGER_SUPPORTED_COMMANDS
+        
         result = ""
         request = request.split(";")
         command = request[0]    # gets the first index, which is the command itself
         
-        if command == "ADD_ASSET":
+        if command == supported_commands[1]:
             asset_name = request[1]
             asset_symbol = request[2]
             asset_price = float(request[3])
@@ -233,10 +239,10 @@ class Manager(Client):
             was_asset_added = AssetController.add_asset(asset_symbol, asset_name, asset_price, asset_available_supply)
             result = f"OK;{asset_symbol}" if was_asset_added else "NOK"
                 
-        if command == "GET_ALL_ASSETS":
+        if command == supported_commands[2]:
             result = AssetController.list_all_assets()
         
-        if command == "REMOVE_ASSET":
+        if command == supported_commands[3]:
             asset_symbol = request[1]
             was_asset_removed = AssetController.remove_asset(asset_symbol)
             result = f"OK;{asset_symbol}" if was_asset_removed else "NOK"

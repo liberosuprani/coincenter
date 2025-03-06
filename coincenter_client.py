@@ -13,12 +13,12 @@ client = None
 def manager_command_to_request(command):
     request = command
     args = []
-    if command == "ADD_ASSET":
+    if command == MANAGER_SUPPORTED_COMMANDS[1]:
         args.append(input("Asset name > "))     # asset's name
         args.append(input("Asset symbol > "))    # asset's symbol 
         args.append(float(input("Asset price > ")))   # asset's price (cast to float)
         args.append(float(input("Available amount > ")))    # asset's available amount
-    if command == "REMOVE_ASSET":
+    if command == MANAGER_SUPPORTED_COMMANDS[3]:
         args.append(input("Asset symbol > ")) # asset's symbol
     for arg in args:
         request += f";{arg}"
@@ -30,10 +30,10 @@ def user_command_to_request(command):
     global USER_ID
     request = command
     args = []
-    if command == "BUY" or command == "SELL":
+    if command == USER_SUPPORTED_COMMANDS[3] or command == USER_SUPPORTED_COMMANDS[4]:
         args.append(input("Asset symbol > "))   # asset's symbol 
         args.append(float(input("Quantity > ")))    # quantity to buy / sell
-    if command == "DEPOSIT" or command == "WITHDRAW":
+    if command == USER_SUPPORTED_COMMANDS[5] or command == USER_SUPPORTED_COMMANDS[6]:
         args.append(float(input("Amount > ")))    # amount to deposit / withdraw
     for arg in args:
         request += f";{arg}"
@@ -46,6 +46,7 @@ def show_manager_menu():
     global client
     
     while True: 
+        print("\n===============")
         print("1) Add asset\n2) List all assets\n3) Remove an asset\n0) Exit")
         command_number = int(input("command > "))
         
@@ -63,7 +64,7 @@ def show_manager_menu():
         request = manager_command_to_request(command)
         
         client.send(request.encode())
-        print(f"SENT: {request}")
+        print(f"\nSENT: {request}")
         
         response = client.recv().decode()
         print(f"RECV: {response}")
@@ -74,6 +75,7 @@ def show_user_menu():
     global USER_ID, client
     
     while True:
+        print("\n===============")
         print("1) List all assets\n2) See my balance\n3) Buy an asset\n4) Sell an asset\n5) Deposit\n6) Withdraw\n0) Exit")
         command_number = int(input("command > "))
         
@@ -91,7 +93,7 @@ def show_user_menu():
         request = user_command_to_request(command)
         
         client.send(request.encode())
-        print(f"SENT: {request}")
+        print(f"\nSENT: {request}")
         
         response = client.recv().decode()
         print(f"RECV: {response}")
