@@ -51,7 +51,7 @@ class AssetController:
     assets:Dict[str, Asset] = {}
 
     @staticmethod
-    def list_all_assets()->str:
+    def list_all_assets() -> str:
         output = "ALL_ASSETS;"
         for asset in AssetController.assets.values():
             output += f"{asset.__str__()}:"
@@ -61,18 +61,35 @@ class AssetController:
         return output
             
     @staticmethod
-    def remove_asset(symbol:str):
+    def remove_asset(symbol:str) -> bool:
         if symbol not in AssetController.assets.keys():
             print("Could not remove asset: asset does not exist.")
             return False
+        
+        # if a user has this asset, then does not remove it
+        clients = ClientController.clients
+        for id in clients.keys():
+            if id != 0:
+                if symbol in clients[id]._holdings.keys():
+                    print("Could not remove asset: a user has this asset.")
+                    return False
+                
         del AssetController.assets[symbol]
         return True
     
     @staticmethod
-    def add_asset(symbol:str,name:str,price:float,available_supply:int):
+    def add_asset(symbol:str, name:str, price:float, available_supply:int) -> bool:
         if symbol in AssetController.assets.keys():
             print("Could not add asset: asset already exists.")
             return False
+        
+        if price <= 0:
+            print("Could not add asset. Price should be greater than 0.")
+            return False
+        if available_supply <= 0:
+            print("Could not add asset. Available amount should be greater than 0.")
+            return False
+        
         # adds a new asset to the list of assets in the AssetController dict
         AssetController.assets[symbol] = Asset(symbol, name, price, available_supply)
         return True
@@ -95,6 +112,7 @@ class User(Client):
 
     def __str__(self):
         output = f"BALANCE;€{self._balance};"
+        
         for asset_symbol in self._holdings.keys():
             asset = AssetController.assets[asset_symbol]
             asset_string = str(asset.__str__())
@@ -114,6 +132,7 @@ class User(Client):
     def buy_asset(self, asset_symbol:str, quantity:float) -> bool:
         try:
             asset = AssetController.assets[asset_symbol]
+            
             # user doesnt have enough balance to buy this quantity of asset
             if self._balance < asset._price * quantity:
                 print("Could not buy asset: not enough balance.")
@@ -171,10 +190,16 @@ class User(Client):
             return False
         
     def deposite(self,amount):
+        if amount <= 0:
+            print("Could not deposit: amount should be greater than 0.")
+            return False
         self._balance += amount
         return True
 
     def withdraw(self,amount):
+        if amount <= 0:
+            print("Could not withdraw: amount should be greater than 0.")
+            return False
         if amount <= self._balance:
             self._balance -= amount
             return True
@@ -190,11 +215,17 @@ class User(Client):
         command = request[0]
         
         if command == supported_commands[1]:
-            result = AssetController.list_all_assets()
-            
+            try:
+                result = AssetController.list_all_assets()
+            except:
+                result = False
+                
         if command == supported_commands[2]:
-            result = self.__str__()
-            
+            try:
+                result = self.__str__()
+            except:
+                result = False
+                
         if command == supported_commands[3]:
             was_bought = self.buy_asset(request[1], float(request[2]))
             result = was_bought
@@ -240,8 +271,11 @@ class Manager(Client):
             result = f"OK;{asset_symbol}" if was_asset_added else "NOK"
                 
         if command == supported_commands[2]:
-            result = AssetController.list_all_assets()
-        
+            try:
+                result = AssetController.list_all_assets()
+            except:
+                result = "NOK"
+                
         if command == supported_commands[3]:
             asset_symbol = request[1]
             was_asset_removed = AssetController.remove_asset(asset_symbol)

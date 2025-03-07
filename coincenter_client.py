@@ -13,16 +13,19 @@ client = None
 def manager_command_to_request(command):
     request = command
     args = []
+    
     if command == MANAGER_SUPPORTED_COMMANDS[1]:
         args.append(input("Asset name > "))     # asset's name
         args.append(input("Asset symbol > "))    # asset's symbol 
         args.append(float(input("Asset price > ")))   # asset's price (cast to float)
         args.append(float(input("Available amount > ")))    # asset's available amount
+    
     if command == MANAGER_SUPPORTED_COMMANDS[3]:
         args.append(input("Asset symbol > ")) # asset's symbol
+    
     for arg in args:
         request += f";{arg}"
-    request += ";0"     # manager id
+    request += ";0"     # manager's id
     return request
 
 
@@ -30,11 +33,14 @@ def user_command_to_request(command):
     global USER_ID
     request = command
     args = []
+    
     if command == USER_SUPPORTED_COMMANDS[3] or command == USER_SUPPORTED_COMMANDS[4]:
         args.append(input("Asset symbol > "))   # asset's symbol 
         args.append(float(input("Quantity > ")))    # quantity to buy / sell
+    
     if command == USER_SUPPORTED_COMMANDS[5] or command == USER_SUPPORTED_COMMANDS[6]:
         args.append(float(input("Amount > ")))    # amount to deposit / withdraw
+    
     for arg in args:
         request += f";{arg}"
     request += f";{USER_ID}"

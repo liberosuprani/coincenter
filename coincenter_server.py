@@ -7,7 +7,6 @@ import sys
 import signal
 from net_server import *
 from coincenter_data import *
-import socket
 
 server = None
 
