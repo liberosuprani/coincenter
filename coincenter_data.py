@@ -34,17 +34,47 @@ class Asset:
         return result
 
     def check_availability(self, quantity:int) -> bool:
+        """
+        Checks whether the asset is available in the given quantity.
+        
+        Requires:
+        - quantity int
+        
+        Ensures:
+        True if is available, False if it is not.
+        """
         # returns True if quantity is greater than 0 and not greater than available_supply
         return quantity > 0 and quantity <= self._available_supply
 
     def decrease_quantity(self, quantity:int) -> bool:
+        """
+        Decreases the amount of the asset in a given quantity.
+        
+        Requires:
+        - quantity int
+        
+        Ensures:
+        True if was completed, False if it was not.
+        """
         if self.check_availability(quantity):
             self._available_supply -= quantity
             return True
         return False
 
-    def increase_quantity(self, quantity):
-        self._available_supply += quantity
+    def increase_quantity(self, quantity) -> bool:
+        """
+        Decreases the amount of the asset in a given quantity.
+        
+        Requires:
+        - quantity int
+        
+        Ensures:
+        True if was completed, False if it was not.
+        """
+        if quantity > 0:
+            self._available_supply += quantity
+            return True
+        return False
 
 
 class AssetController:
@@ -52,6 +82,9 @@ class AssetController:
 
     @staticmethod
     def list_all_assets() -> str:
+        """
+        Lists all the assets.
+        """
         output = "ALL_ASSETS;"
         for asset in AssetController.assets.values():
             output += f"{asset.__str__()}:"
@@ -62,6 +95,15 @@ class AssetController:
             
     @staticmethod
     def remove_asset(symbol:str) -> bool:
+        """
+        Removes an asset based on the given symbol
+        
+        Requires:
+        - symbol str
+        
+        Ensures:
+        Deletion and True if it was completed, False if it was not.
+        """
         if symbol not in AssetController.assets.keys():
             print("Could not remove asset: asset does not exist.")
             return False
@@ -79,6 +121,18 @@ class AssetController:
     
     @staticmethod
     def add_asset(symbol:str, name:str, price:float, available_supply:int) -> bool:
+        """
+        Adds an asset.
+        
+        Requires:
+        - symbol str
+        - name str
+        - price float
+        - available_supply int
+        
+        Ensures:
+        The addition and True if it was completed, False if it was not.
+        """
         if symbol in AssetController.assets.keys():
             print("Could not add asset: asset already exists.")
             return False
@@ -130,6 +184,9 @@ class User(Client):
         return output
 
     def buy_asset(self, asset_symbol:str, quantity:float) -> bool:
+        """
+        Buys an asset.
+        """
         try:
             asset = AssetController.assets[asset_symbol]
             
@@ -162,6 +219,9 @@ class User(Client):
             return False
             
     def sell_asset(self, asset_symbol:str, quantity:float) -> bool:
+        """
+        Sells an asset.
+        """
         try:
             if asset_symbol not in self._holdings.keys():
                 print("Could not sell asset: user does not own this type of asset.")
@@ -190,6 +250,9 @@ class User(Client):
             return False
         
     def deposite(self,amount):
+        """
+        Makes a deposit of the given amount.
+        """
         if amount <= 0:
             print("Could not deposit: amount should be greater than 0.")
             return False
@@ -197,6 +260,9 @@ class User(Client):
         return True
 
     def withdraw(self,amount):
+        """
+        Withdraws the given amount.
+        """
         if amount <= 0:
             print("Could not withdraw: amount should be greater than 0.")
             return False
@@ -208,6 +274,9 @@ class User(Client):
             return False
            
     def process_request(self, request: str) -> str:
+        """
+        Processes the request given and gives a response.
+        """
         supported_commands = USER_SUPPORTED_COMMANDS
         
         result = ""
@@ -255,6 +324,9 @@ class Manager(Client):
         super().__init__(user_id)
 
     def process_request(self, request):
+        """
+        Processes the request given and gives a response.
+        """
         supported_commands = MANAGER_SUPPORTED_COMMANDS
         
         result = ""

@@ -10,7 +10,16 @@ from coincenter_data import MANAGER_SUPPORTED_COMMANDS, USER_SUPPORTED_COMMANDS
 USER_ID = 0
 client = None
 
-def manager_command_to_request(command):
+def manager_command_to_request(command) -> str:
+    """
+    Parses a manager command into a request for the server.
+    
+    Requires:
+    - command str
+    
+    Ensures:
+    A concatenation of the given command with the arguments needed for it.
+    """
     request = command
     args = []
     
@@ -29,7 +38,16 @@ def manager_command_to_request(command):
     return request
 
 
-def user_command_to_request(command):
+def user_command_to_request(command) -> str:
+    """
+    Parses a user command into a request for the server.
+    
+    Requires:
+    - command str
+    
+    Ensures:
+    A concatenation of the given command with the arguments needed for it.
+    """
     global USER_ID
     request = command
     args = []
@@ -48,7 +66,9 @@ def user_command_to_request(command):
 
 
 def show_manager_menu():
-    
+    """
+    Shows the manager menu and collects the input.
+    """
     global client
     
     while True: 
@@ -77,7 +97,9 @@ def show_manager_menu():
   
             
 def show_user_menu():
-    
+    """
+    Shows the user menu and collects the input.
+    """
     global USER_ID, client
     
     while True:

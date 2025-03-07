@@ -6,6 +6,17 @@ import socket as s
 import sys
 
 def create_tcp_server_socket(address='localhost', port=9999, queue_size=1):
+    """
+    Creates a tcp socket for a server.
+    
+    Requires:
+    - address str
+    - port int
+    - queue_size int (default=1) 
+    
+    Ensures:
+    The socket created
+    """
     try:
         sock = s.socket(s.AF_INET, s.SOCK_STREAM)
         sock.bind((address, port))
@@ -16,6 +27,16 @@ def create_tcp_server_socket(address='localhost', port=9999, queue_size=1):
         sys.exit(1)
         
 def create_tcp_client_socket(address='localhost', port=9999):
+    """
+    Creates a socket for a client and connects it to a server.
+    
+    Requires:
+    - address str
+    - port int
+    
+    Ensures:
+    The socket created
+    """
     try:
         sock = s.socket(s.AF_INET, s.SOCK_STREAM)
         sock.connect((address, port))
