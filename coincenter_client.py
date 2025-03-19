@@ -4,13 +4,13 @@ Número de aluno: 62220
 """
 
 import sys
-from net_client import *
+from coincenter_stub import *
 from coincenter_data import MANAGER_SUPPORTED_COMMANDS, USER_SUPPORTED_COMMANDS
 
 USER_ID = 0
-client = None
+stub = None
 
-def manager_command_to_request(command) -> str:
+def manager_command_to_request(command_number) -> str:
     """
     Parses a manager command into a request for the server.
     
@@ -20,25 +20,22 @@ def manager_command_to_request(command) -> str:
     Ensures:
     A concatenation of the given command with the arguments needed for it.
     """
-    request = command
-    args = []
+    request = [command_number]
     
-    if command == MANAGER_SUPPORTED_COMMANDS[1]:
-        args.append(input("Asset name > "))     # asset's name
-        args.append(input("Asset symbol > "))    # asset's symbol 
-        args.append(float(input("Asset price > ")))   # asset's price (cast to float)
-        args.append(float(input("Available amount > ")))    # asset's available amount
+    if command_number == MANAGER_SUPPORTED_COMMANDS[1]:
+        request.append(input("Asset name > "))     # asset's name
+        request.append(input("Asset symbol > "))    # asset's symbol 
+        request.append(float(input("Asset price > ")))   # asset's price (cast to float)
+        request.append(float(input("Available amount > ")))    # asset's available amount
     
-    if command == MANAGER_SUPPORTED_COMMANDS[3]:
-        args.append(input("Asset symbol > ")) # asset's symbol
+    if command_number == MANAGER_SUPPORTED_COMMANDS[3]:
+        request.append(input("Asset symbol > ")) # asset's symbol
     
-    for arg in args:
-        request += f";{arg}"
-    request += ";0"     # manager's id
+    request.append(0)     # manager's id
     return request
 
 
-def user_command_to_request(command) -> str:
+def user_command_to_request(command_number) -> str:
     """
     Parses a user command into a request for the server.
     
@@ -49,19 +46,16 @@ def user_command_to_request(command) -> str:
     A concatenation of the given command with the arguments needed for it.
     """
     global USER_ID
-    request = command
-    args = []
+    request = [command_number]
     
-    if command == USER_SUPPORTED_COMMANDS[3] or command == USER_SUPPORTED_COMMANDS[4]:
-        args.append(input("Asset symbol > "))   # asset's symbol 
-        args.append(float(input("Quantity > ")))    # quantity to buy / sell
+    if command_number == USER_SUPPORTED_COMMANDS[3] or command_number == USER_SUPPORTED_COMMANDS[4]:
+        request.append(input("Asset symbol > "))   # asset's symbol 
+        request.append(float(input("Quantity > ")))    # quantity to buy / sell
     
-    if command == USER_SUPPORTED_COMMANDS[5] or command == USER_SUPPORTED_COMMANDS[6]:
-        args.append(float(input("Amount > ")))    # amount to deposit / withdraw
+    if command_number == USER_SUPPORTED_COMMANDS[5] or command_number == USER_SUPPORTED_COMMANDS[6]:
+        request.append(float(input("Amount > ")))    # amount to deposit / withdraw
     
-    for arg in args:
-        request += f";{arg}"
-    request += f";{USER_ID}"
+    request.append(USER_ID)
     return request
 
 
@@ -69,11 +63,11 @@ def show_manager_menu():
     """
     Shows the manager menu and collects the input.
     """
-    global client
+    global stub
     
     while True: 
         print("\n===============")
-        print("1) Add asset\n2) List all assets\n3) Remove an asset\n0) Exit")
+        print("10) Add asset\n20) List all assets\n30) Remove an asset\n40) Exit")
         command_number = int(input("command > "))
         
         while command_number not in MANAGER_SUPPORTED_COMMANDS.keys():
@@ -84,27 +78,23 @@ def show_manager_menu():
         command = MANAGER_SUPPORTED_COMMANDS[command_number]
         
         if command == "EXIT":
-            client.close()
+            stub.close()
             return
         
-        request = manager_command_to_request(command)
-        
-        client.send(request.encode())
-        print(f"\nSENT: {request}")
-        
-        response = client.recv().decode()
-        print(f"RECV: {response}")
-  
-            
+        request = manager_command_to_request(command_number)
+
+        stub.process_request(request)
+
+
 def show_user_menu():
     """
     Shows the user menu and collects the input.
     """
-    global USER_ID, client
+    global USER_ID, stub
     
     while True:
         print("\n===============")
-        print("1) List all assets\n2) See my balance\n3) Buy an asset\n4) Sell an asset\n5) Deposit\n6) Withdraw\n0) Exit")
+        print("50) List all assets\n60) See my balance\n70) Buy an asset\n80) Sell an asset\n90) Deposit\n100) Withdraw\n110) Exit")
         command_number = int(input("command > "))
         
         while command_number not in USER_SUPPORTED_COMMANDS.keys():
@@ -115,21 +105,17 @@ def show_user_menu():
         command = USER_SUPPORTED_COMMANDS[command_number]
         
         if command == "EXIT":
-            client.close()
+            stub.close()
             return
         
         request = user_command_to_request(command)
         
-        client.send(request.encode())
-        print(f"\nSENT: {request}")
-        
-        response = client.recv().decode()
-        print(f"RECV: {response}")
+        stub.process_request(request)
 
 
 def main():
     
-    global client, USER_ID
+    global stub, USER_ID
     
     if len(sys.argv) != 4:
         print("Usage: python3 coincenter_client.py user_id server_ip server_port")
@@ -143,8 +129,9 @@ def main():
         print("User id must be 0 (manager) or above (normal user)!")
         sys.exit(1)
     
-    client = NetClient(USER_ID, HOST, PORT) 
-    
+    stub = CoincenterStub()
+    stub.connect(USER_ID, HOST, PORT)
+
     if USER_ID == 0:
         show_manager_menu()
     else:

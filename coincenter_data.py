@@ -5,21 +5,34 @@ Número de aluno: 62220
 from typing import Dict
 from abc import ABC, abstractmethod
 
+MGR_ADD_ASSET = 10
+MGR_GET_ALL_ASSETS = 20
+MGR_REMOVE_ASSET = 30
+MGR_EXIT = 40
+
+USER_GET_ALL_ASSETS = 50
+USER_GET_ASSETS_BALANCE = 60
+USER_BUY = 70
+USER_SELL = 80
+USER_DEPOSIT = 90
+USER_WITHDRAW = 100
+USER_EXIT = 110
+
 MANAGER_SUPPORTED_COMMANDS = {
-    1: "ADD_ASSET",
-    2: "GET_ALL_ASSETS",
-    3: "REMOVE_ASSET",
-    0: "EXIT",
+    MGR_ADD_ASSET: "ADD_ASSET",
+    MGR_GET_ALL_ASSETS: "GET_ALL_ASSETS",
+    MGR_REMOVE_ASSET: "REMOVE_ASSET",
+    MGR_EXIT: "EXIT",
 }
 
 USER_SUPPORTED_COMMANDS = {
-    1: "GET_ALL_ASSETS",
-    2: "GET_ASSETS_BALANCE",
-    3: "BUY",
-    4: "SELL",
-    5: "DEPOSIT",
-    6: "WITHDRAW",
-    0: "EXIT"
+    USER_GET_ALL_ASSETS: "GET_ALL_ASSETS",
+    USER_GET_ASSETS_BALANCE: "GET_ASSETS_BALANCE",
+    USER_BUY: "BUY",
+    USER_SELL: "SELL",
+    USER_DEPOSIT: "DEPOSIT",
+    USER_WITHDRAW: "WITHDRAW",
+    USER_EXIT: "EXIT"
 }
 
 class Asset:
@@ -61,7 +74,7 @@ class Asset:
             return True
         return False
 
-    def increase_quantity(self, quantity) -> bool:
+    def increase_quantity(self, quantity):
         """
         Decreases the amount of the asset in a given quantity.
         
@@ -73,9 +86,7 @@ class Asset:
         """
         if quantity > 0:
             self._available_supply += quantity
-            return True
-        return False
-
+            
 
 class AssetController:
     assets:Dict[str, Asset] = {}

@@ -10,6 +10,8 @@ class NetClient:
         self._host = host
         self._port = port
         self._socket = sock_utils.create_tcp_client_socket(host, port)
+        
+        # sends the client's id to the server
         self.send(f"{self._id}".encode())
      
     def send(self, data):
