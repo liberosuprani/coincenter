@@ -6,12 +6,15 @@ class CoincenterSkeleton:
         self.response = []
 
     def process_request(self, request):
-        request = pickle.loads(request)
-        print(f"RECV: {request}") 
+        try:
+            request = pickle.loads(request)
+            print(f"RECV: {request}") 
 
-        self.response = ClientController.process_request(request)
+            self.response = ClientController.process_request(request)
 
-        bytesResponse = pickle.dumps(self.response)
-        print(f"SENT: {self.response}") 
+            bytesResponse = pickle.dumps(self.response)
+            print(f"SENT: {self.response}") 
+        except:
+            return []
         
         return bytesResponse

@@ -3,21 +3,22 @@ Aplicações Distribuídas - Projeto 1 - coincenter_server.py
 Número de aluno: 62220
 """
 
-import sys
-import signal
+import sys, signal, select
 from net_server import *
 from coincenter_skeleton import *
-
-server = None
 
 def handle_shutdown(signum, frame):
     global server
     server.close()
     sys.exit(0)
 
+server = None
+socket_list = []
+
 def main():
     
-    global server
+    global server, socket_list
+
     signal.signal(signal.SIGINT, handle_shutdown)
     
     if len(sys.argv) != 3:
@@ -28,30 +29,30 @@ def main():
     server_port = int(sys.argv[2])
 
     server = NetServer(server_ip, server_port)
+    socket_list = [server._socket]
 
     skeleton = CoincenterSkeleton()
 
     while True:
-        connection_socket = None
-        try:
-            (connection_socket, (addr, port)) = server.accept()
-            id_received = server.recv(connection_socket).decode()
-            print(f"Client connected: [Id: {id_received}, Address: {addr}, Port: {port}]")
-            
-            while True:
-                request = server.recv(connection_socket)
-
-                if request == "":
-                    print("Client disconnected.")
-                    break
-               
-                response = skeleton.process_request(request)
-                server.send(response, connection_socket)
-        except:
-            if connection_socket is not None:
-                connection_socket.close()
+        # connection_socket = None
+        R, W, X = select.select(socket_list, [], [])
+        for s in R:
+            if s is server._socket:
+                (connection_socket, (addr, port)) = server.accept()
+                id_received = server.recv(connection_socket).decode()
+                socket_list.append(connection_socket)
+                print(f"Client connected: [Id: {id_received}, Address: {addr}, Port: {port}]")
             else:
-                break
+                request = server.recv(s)
+                response = skeleton.process_request(request)
+
+                # if response was an empty list, it means the client has disconnected
+                if response == []:
+                    s.close()
+                    socket_list.remove(s)
+                    print("Client disconnected.")
+                else:
+                    server.send(response, s)
             
 if __name__ == "__main__":
     main()
