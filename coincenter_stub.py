@@ -11,13 +11,14 @@ class CoincenterStub:
     def disconnect(self):
         self.conn_sock.close()
 
-    def process_request(self, request):
+    def send_request(self, request):
         try:
             bytes_request = pickle.dumps(request)
             self.conn_sock.send(bytes_request)
             print(f"\nSENT: {request}")
 
             bytes_response = self.conn_sock.recv()
+
             response = pickle.loads(bytes_response)
             print(f"RECV: {response}")
             

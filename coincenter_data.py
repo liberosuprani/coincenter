@@ -96,12 +96,9 @@ class AssetController:
         """
         Lists all the assets.
         """
-        output = "ALL_ASSETS;"
+        output = []
         for asset in AssetController.assets.values():
-            output += f"{asset.__str__()}:"
-            
-        if output != "ALL_ASSETS;":
-            output = output[:-1]
+            output.append(asset.__str__())
         return output
             
     @staticmethod
@@ -176,22 +173,25 @@ class User(Client):
         self._holdings: Dict[str, float] = {}
 
     def __str__(self):
-        output = f"BALANCE;€{self._balance};"
+        output = [self._balance]
         
         for asset_symbol in self._holdings.keys():
             asset = AssetController.assets[asset_symbol]
             asset_string = str(asset.__str__())
             
             # gets the parameters without price and avaliable quantity of the asset
-            asset_string = asset_string.split(";")[:2]
-            
-            # adds the symbol and name of asset to the response string
-            for i in asset_string:
-                output += f"{i};"
-            
+            asset_string_aux = asset_string.split(";")[:2]
+
             # adds the quantity owned by user
-            output += f"{self._holdings[asset_symbol]}:"
-        output = output[:-1]
+            asset_string_aux.append(self._holdings[asset_symbol])
+            
+            asset_string = ""
+            for element in asset_string_aux:
+                asset_string += f"{element};"
+
+            asset_string = asset_string[:-1]
+
+            output.append(asset_string)
         return output
 
     def buy_asset(self, asset_symbol:str, quantity:float) -> bool:
@@ -260,7 +260,7 @@ class User(Client):
             print("Could not sell asset: asset does not exist.")
             return False
         
-    def deposite(self,amount):
+    def deposit(self, amount) -> bool:
         """
         Makes a deposit of the given amount.
         """
@@ -270,7 +270,7 @@ class User(Client):
         self._balance += amount
         return True
 
-    def withdraw(self,amount):
+    def withdraw(self, amount) -> bool:
         """
         Withdraws the given amount.
         """
@@ -284,85 +284,91 @@ class User(Client):
             print("Could not withdraw: unavailable amount.")
             return False
            
-    def process_request(self, request: str) -> str:
+    def process_request(self, request: list) -> list:
         """
         Processes the request given and gives a response.
         """
-        supported_commands = USER_SUPPORTED_COMMANDS
         
-        result = ""
-        request = request.split(";")
         command = request[0]
-        
-        if command == supported_commands[1]:
-            try:
-                result = AssetController.list_all_assets()
-            except:
-                result = False
+        result = [command+1]
+
+        if command == USER_GET_ALL_ASSETS: # get all assets
+            result.extend(AssetController.list_all_assets())
+
+            # the list of all assets returned was an empty list
+            if len(result) == 1:
+                result.append(False)
                 
-        if command == supported_commands[2]:
+        if command == USER_GET_ASSETS_BALANCE: # get assets balance
             try:
-                result = self.__str__()
+                result.extend(self.__str__())
             except:
-                result = False
+                result.append(False)
                 
-        if command == supported_commands[3]:
+        if command == USER_BUY: # buy asset
             was_bought = self.buy_asset(request[1], float(request[2]))
-            result = was_bought
+            result.append(was_bought)
             
-        if command == supported_commands[4]:
+        if command == USER_SELL: # sell asset
             was_sold = self.sell_asset(request[1], float(request[2]))
-            result = was_sold
+            result.append(was_sold)
                 
-        if command == supported_commands[5]:
-            was_deposited = self.deposite(float(request[1]))
-            result = was_deposited
+        if command == USER_DEPOSIT: # deposit
+            was_deposited = self.deposit(float(request[1]))
+            result.append(was_deposited)
                 
-        if command == supported_commands[6]:
+        if command == USER_WITHDRAW: # withdraw
             was_withdrawn = self.withdraw(float(request[1]))
-            result = was_withdrawn
+            result.append(was_withdrawn)
         
-        if result == True:
-            result = "OK"
-        elif result == False:
-            result = "NOK"
-         
-        return result
+        # if result[1] is a boolean, response is the same
+        # else, it means that result[1] is the result of an operation (e.g. list all assets)
+        # then, insert True into index 1
+        response = result
+
+        if result[1] == True or result[1] == False:
+            response = result
+        else:
+            response.insert(1, True)
+
+        return response
         
         
 class Manager(Client):
     def __init__(self, user_id):
         super().__init__(user_id)
 
-    def process_request(self, request):
+    def process_request(self, request: list) -> list:
         """
         Processes the request given and gives a response.
         """
-        supported_commands = MANAGER_SUPPORTED_COMMANDS
         
-        result = ""
-        request = request.split(";")
         command = request[0]    # gets the first index, which is the command itself
+        result = [command+1]
         
-        if command == supported_commands[1]:
+        if command == MGR_ADD_ASSET: # add asset
             asset_name = request[1]
             asset_symbol = request[2]
             asset_price = float(request[3])
             asset_available_supply = float(request[4])
             
             was_asset_added = AssetController.add_asset(asset_symbol, asset_name, asset_price, asset_available_supply)
-            result = f"OK;{asset_symbol}" if was_asset_added else "NOK"
+            result.append(was_asset_added)
                 
-        if command == supported_commands[2]:
-            try:
-                result = AssetController.list_all_assets()
-            except:
-                result = "NOK"
+        if command == MGR_GET_ALL_ASSETS: # list all assets
+            result.extend(AssetController.list_all_assets())
+            
+            # the list of all assets returned was an empty list
+            if len(result) == 1:
+                result.append(False)
                 
-        if command == supported_commands[3]:
+        if command == MGR_REMOVE_ASSET: # remove asset
             asset_symbol = request[1]
             was_asset_removed = AssetController.remove_asset(asset_symbol)
-            result = f"OK;{asset_symbol}" if was_asset_removed else "NOK"
+            result.append(was_asset_removed)
+
+            if was_asset_removed:
+                result.append(asset_symbol)
             
         return result
 
@@ -370,8 +376,8 @@ class ClientController:
     clients:Dict[int,Client] = {0:Manager(0)}
 
     @staticmethod
-    def process_request(request:str) -> str:
-        client_id = int(request.split(";")[-1])  # gets the id, which is the last arg in the request
+    def process_request(request:list) -> list:
+        client_id = int(request[-1])  # gets the id, which is the last element in the request
         
         if client_id not in ClientController.clients.keys():
             ClientController.clients[client_id] = User(client_id)

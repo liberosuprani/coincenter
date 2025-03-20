@@ -6,7 +6,7 @@ Número de aluno: 62220
 import sys
 import signal
 from net_server import *
-from coincenter_data import *
+from coincenter_skeleton import *
 
 server = None
 
@@ -29,6 +29,8 @@ def main():
 
     server = NetServer(server_ip, server_port)
 
+    skeleton = CoincenterSkeleton()
+
     while True:
         connection_socket = None
         try:
@@ -38,17 +40,13 @@ def main():
             
             while True:
                 request = server.recv(connection_socket)
-                request = request.decode()
-                
+
                 if request == "":
                     print("Client disconnected.")
                     break
-                
-                print(f"RECV: {request}") 
-                response = ClientController.process_request(request)
-                
-                server.send(response.encode(), connection_socket)
-                print(f"SENT: {response}")
+               
+                response = skeleton.process_request(request)
+                server.send(response, connection_socket)
         except:
             if connection_socket is not None:
                 connection_socket.close()
