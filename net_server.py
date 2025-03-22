@@ -17,6 +17,11 @@ class NetServer:
         data = client_socket.recv(1024)
         return data
     
+    def receive_all(self, client_socket):
+        data = sock_utils.receive_all(client_socket)
+        return data
+
+    # TODO mandar o tamanho da mensagem
     def send(self, data, client_socket):
         client_socket.sendall(data)
         

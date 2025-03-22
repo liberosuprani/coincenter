@@ -7,6 +7,7 @@ import sys, signal, select
 from net_server import *
 from coincenter_skeleton import *
 
+
 def handle_shutdown(signum, frame):
     global server
     server.close()
@@ -43,16 +44,17 @@ def main():
                 socket_list.append(connection_socket)
                 print(f"Client connected: [Id: {id_received}, Address: {addr}, Port: {port}]")
             else:
-                request = server.recv(s)
-                response = skeleton.process_request(request)
+                try:
+                    request_bytes = server.receive_all(s)
+                    (response_size, response) = skeleton.process_request(request_bytes)
 
-                # if response was an empty list, it means the client has disconnected
-                if response == []:
+                    server.send(response_size, s)
+                    server.send(response, s)
+                except:
                     s.close()
                     socket_list.remove(s)
                     print("Client disconnected.")
-                else:
-                    server.send(response, s)
+                
             
 if __name__ == "__main__":
     main()

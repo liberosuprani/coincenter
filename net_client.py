@@ -2,7 +2,7 @@
 Aplicações Distribuídas - Projeto 1 - net_client.py
 Número de aluno: 62220
 """
-import sock_utils
+import sock_utils, struct
 
 class NetClient:
     def __init__(self, id, host, port):
@@ -14,11 +14,16 @@ class NetClient:
         # sends the client's id to the server
         self.send(f"{self._id}".encode())
      
+    # TODO mandar o tamanho da mensagem
     def send(self, data):
         self._socket.sendall(data)
 
     def recv(self):
         data = self._socket.recv(1024)
+        return data
+    
+    def receive_all(self):
+        data = sock_utils.receive_all(self._socket)
         return data
     
     def close(self):

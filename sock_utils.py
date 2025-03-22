@@ -3,7 +3,7 @@ Aplicações Distribuídas - Projeto 1 - sock_utils.py
 Número de aluno: 62220
 """
 import socket as s
-import sys
+import sys, struct, pickle
 
 def create_tcp_server_socket(address='localhost', port=9999, queue_size=1):
     """
@@ -44,3 +44,13 @@ def create_tcp_client_socket(address='localhost', port=9999):
     except:
         print("An error occurred during the creation of the client socket.")
         sys.exit(1)
+
+def receive_all(socket_receiver: s.socket):
+    try:
+        data_size_bytes = socket_receiver.recv(4)
+        data_size = struct.unpack("i", data_size_bytes)[0]
+        data_bytes = socket_receiver.recv(data_size)
+    except:
+        print("An error occurred while receiving.")
+
+    return data_bytes

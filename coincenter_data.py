@@ -5,11 +5,11 @@ Número de aluno: 62220
 from typing import Dict
 from abc import ABC, abstractmethod
 
+# constants with the number of each command
 MGR_ADD_ASSET = 10
 MGR_GET_ALL_ASSETS = 20
 MGR_REMOVE_ASSET = 30
 MGR_EXIT = 40
-
 USER_GET_ALL_ASSETS = 50
 USER_GET_ASSETS_BALANCE = 60
 USER_BUY = 70
