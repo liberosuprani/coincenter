@@ -51,6 +51,9 @@ def receive_all(socket_receiver: s.socket):
         data_size = struct.unpack("i", data_size_bytes)[0]
         data_bytes = socket_receiver.recv(data_size)
     except:
-        print("An error occurred while receiving.")
+        if data_size_bytes.decode() == "":
+            raise s.error()
+        else:
+            print("An error occurred while receiving.")
 
     return data_bytes

@@ -3,6 +3,7 @@ Aplicações Distribuídas - Projeto 1 - net_server.py
 Número de aluno: 62220
 """
 import sock_utils
+import socket as s
 
 class NetServer:
     def __init__(self, host, port):
@@ -18,7 +19,12 @@ class NetServer:
         return data
     
     def receive_all(self, client_socket):
-        data = sock_utils.receive_all(client_socket)
+        try:
+            data = sock_utils.receive_all(client_socket)
+        except s.error as e:
+            raise s.error()
+
+
         return data
 
     # TODO mandar o tamanho da mensagem

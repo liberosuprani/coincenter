@@ -15,8 +15,6 @@ class CoincenterSkeleton:
             bytes_response = pickle.dumps(self.response)
             bytes_response_size = struct.pack("i", len(bytes_response))
 
-            print(f"TESTE SENT: {self.response} - {len(self.response)}")
-
             print(f"SENT: {self.response}") 
         except:
             return (0, [])
