@@ -22,6 +22,6 @@ class CoincenterStub:
 
             return response
         except socket.error as e:
-            print(f"There was an error communicating with the server. {e}")
+            print(f"There was an error sending the request/receiving a response to/from the server. {e}")
 
 
