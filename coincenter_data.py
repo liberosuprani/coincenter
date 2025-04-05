@@ -194,6 +194,18 @@ class User(Client):
             output.append(asset_string)
         return output
 
+    def get_all_assets(self):
+        result = AssetController.list_all_assets()
+        if len(result) == 0:
+            result = False
+        return result
+
+    def get_assets_balance(self):
+        result = self.__str__()
+        if len(result) == 0:
+            result = False
+        return result
+
     def buy_asset(self, asset_symbol:str, quantity:float) -> bool:
         """
         Buys an asset.
@@ -289,88 +301,28 @@ class User(Client):
         Processes the request given and gives a response.
         """
         
-        command = request[0]
-        result = [command+1]
-
-        if command == USER_GET_ALL_ASSETS: # get all assets
-            result.extend(AssetController.list_all_assets())
-
-            # the list of all assets returned was an empty list
-            if len(result) == 1:
-                result.append(False)
-                
-        if command == USER_GET_ASSETS_BALANCE: # get assets balance
-            try:
-                result.extend(self.__str__())
-            except:
-                result.append(False)
-                
-        if command == USER_BUY: # buy asset
-            was_bought = self.buy_asset(request[1], float(request[2]))
-            result.append(was_bought)
-            
-        if command == USER_SELL: # sell asset
-            was_sold = self.sell_asset(request[1], float(request[2]))
-            result.append(was_sold)
-                
-        if command == USER_DEPOSIT: # deposit
-            was_deposited = self.deposit(float(request[1]))
-            result.append(was_deposited)
-                
-        if command == USER_WITHDRAW: # withdraw
-            was_withdrawn = self.withdraw(float(request[1]))
-            result.append(was_withdrawn)
-        
-        # if result[1] is a boolean, response is the same
-        # else, it means that result[1] is the result of an operation (e.g. list all assets)
-        # then, insert True into index 1
-        response = result
-
-        if result[1] == True or result[1] == False:
-            response = result
-        else:
-            response.insert(1, True)
-
-        return response
-        
         
 class Manager(Client):
     def __init__(self, user_id):
         super().__init__(user_id)
 
-    def process_request(self, request: list) -> list:
-        """
-        Processes the request given and gives a response.
-        """
-        
-        command = request[0]    # gets the first index, which is the command itself
-        result = [command+1]
-        
-        if command == MGR_ADD_ASSET: # add asset
-            asset_name = request[1]
-            asset_symbol = request[2]
-            asset_price = float(request[3])
-            asset_available_supply = float(request[4])
-            
-            was_asset_added = AssetController.add_asset(asset_symbol, asset_name, asset_price, asset_available_supply)
-            result.append(was_asset_added)
-                
-        if command == MGR_GET_ALL_ASSETS: # list all assets
-            result.extend(AssetController.list_all_assets())
-            
-            # the list of all assets returned was an empty list
-            if len(result) == 1:
-                result.append(False)
-                
-        if command == MGR_REMOVE_ASSET: # remove asset
-            asset_symbol = request[1]
-            was_asset_removed = AssetController.remove_asset(asset_symbol)
-            result.append(was_asset_removed)
+    def add_asset(self, asset_name, asset_symbol, asset_price, asset_available_supply):
+        was_asset_added = AssetController.add_asset(asset_symbol, asset_name, asset_price, asset_available_supply)
+        return was_asset_added
 
-            if was_asset_removed:
-                result.append(asset_symbol)
-            
+    def get_all_assets(self):
+        result = AssetController.list_all_assets()
+        if len(result) == 0:
+            result = False
         return result
+        
+    def remove_asset(self, asset_symbol):
+        was_asset_removed = AssetController.remove_asset(asset_symbol)
+        result = asset_symbol
+        if not was_asset_removed:
+            result = False 
+        return result
+    
 
 class ClientController:
     clients:Dict[int,Client] = {0:Manager(0)}

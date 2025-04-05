@@ -135,17 +135,17 @@ def show_manager_menu():
         manager_command_with_args = []
 
         # if the input is an integer
-        # the input was a string containing the command and the args (probably)
         if manager_command.isdigit():
             manager_command = int(manager_command)
+        # the input was a string containing the command and the args (probably)
         else:
             manager_command_with_args = manager_command.split(";")
             manager_command = manager_command_with_args[0]
 
-        valid_numbers = consts.MANAGER_SUPPORTED_COMMANDS.keys()
+        valid_command_numbers = consts.MANAGER_SUPPORTED_COMMANDS.keys()
         valid_commands = consts.MANAGER_SUPPORTED_COMMANDS.values()
 
-        while manager_command not in valid_numbers and (manager_command not in valid_commands or not validate_manager_command(manager_command_with_args)): 
+        while manager_command not in valid_command_numbers and (manager_command not in valid_commands or not validate_manager_command(manager_command_with_args)): 
             print("Command does not exist or has invalid arguments. Try again.")
             manager_command = input("command > ")
             if manager_command.isdigit():
@@ -157,7 +157,7 @@ def show_manager_menu():
         
         # if command was a number, call the function that will ask for the args,
         # else it will append the user id and assign it to the request variable
-        if manager_command in valid_numbers:
+        if manager_command in valid_command_numbers:
             request = manager_command_to_request(manager_command)
         else:
             manager_command_with_args[0] = [number for number in consts.MANAGER_SUPPORTED_COMMANDS.keys() if consts.MANAGER_SUPPORTED_COMMANDS[number] == manager_command][0]
@@ -198,10 +198,10 @@ def show_user_menu():
             user_command_with_args = user_command.split(";")
             user_command = user_command_with_args[0]
 
-        valid_numbers = consts.USER_SUPPORTED_COMMANDS.keys()
+        valid_command_numbers = consts.USER_SUPPORTED_COMMANDS.keys()
         valid_commands = consts.USER_SUPPORTED_COMMANDS.values()
 
-        while user_command not in valid_numbers and (user_command not in valid_commands or not validate_user_command(user_command_with_args)): 
+        while user_command not in valid_command_numbers and (user_command not in valid_commands or not validate_user_command(user_command_with_args)): 
             print("Command does not exist or has invalid arguments. Try again.")
             user_command = input("command > ")
             if user_command.isdigit():
@@ -213,7 +213,7 @@ def show_user_menu():
         
         # if command was a number, call the function that will ask for the args,
         # else it will append the user id and assign it to the request variable
-        if user_command in valid_numbers:
+        if user_command in valid_command_numbers:
             request = user_command_to_request(user_command)
         else:
             user_command_with_args[0] = [number for number in consts.USER_SUPPORTED_COMMANDS.keys() if consts.USER_SUPPORTED_COMMANDS[number] == user_command][0]
