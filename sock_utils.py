@@ -50,10 +50,11 @@ def receive_all(socket_receiver: s.socket):
         data_size_bytes = socket_receiver.recv(4)
         data_size = struct.unpack("i", data_size_bytes)[0]
         data_bytes = socket_receiver.recv(data_size)
+        data = pickle.loads(data_bytes)
     except:
         if data_size_bytes.decode() == "":
             raise s.error()
         else:
             print("An error occurred while receiving.")
 
-    return data_bytes
+    return data

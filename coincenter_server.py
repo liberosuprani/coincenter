@@ -35,7 +35,6 @@ def main():
     skeleton = CoincenterSkeleton()
 
     while True:
-        # connection_socket = None
         R, W, X = select.select(socket_list, [], [])
         for s in R:
             if s is server._socket:
@@ -45,10 +44,10 @@ def main():
                 print(f"Client connected: [Id: {id_received}, Address: {addr}, Port: {port}]")
             else:
                 try:
-                    request_bytes = server.receive_all(s)
-                    (response_size, response) = skeleton.process_request(request_bytes)
+                    request = server.receive_all(s)
+                    print(f"RECV: {request}") 
 
-                    server.send(response_size, s)
+                    response = skeleton.process_request(request)
                     server.send(response, s)
                 except:
                     s.close()

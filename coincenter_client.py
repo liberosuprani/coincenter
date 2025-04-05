@@ -84,6 +84,40 @@ def validate_manager_command(command_and_args: list) -> bool:
     if command == consts.MANAGER_SUPPORTED_COMMANDS[consts.MGR_EXIT]:
         return len(command_and_args) == 1
 
+
+def validate_user_command(command_and_args: list) -> bool:
+    """
+    Validates a user command and its args.
+    """
+    command = command_and_args[0]
+
+    if command == consts.USER_SUPPORTED_COMMANDS[consts.USER_GET_ALL_ASSETS] or command == consts.USER_SUPPORTED_COMMANDS[consts.USER_GET_ASSETS_BALANCE]:
+        return len(command_and_args) == 1
+    
+    if command == consts.USER_SUPPORTED_COMMANDS[consts.USER_BUY] or command == consts.USER_SUPPORTED_COMMANDS[consts.USER_SELL]:
+        if len(command_and_args) != 3:
+            return False
+        try:
+            x = float(command_and_args[2])
+        except:
+            return False
+        else:
+            return True
+        
+    if command == consts.USER_SUPPORTED_COMMANDS[consts.USER_DEPOSIT] or command == consts.USER_SUPPORTED_COMMANDS[consts.USER_WITHDRAW]:
+        if len(command_and_args) != 2:
+            return False
+        try:
+            x = float(command_and_args[1])
+        except:
+            return False
+        else:
+            return True
+    
+    if command == consts.USER_SUPPORTED_COMMANDS[consts.USER_EXIT]:
+        return len(command_and_args) == 1
+
+
 def show_manager_menu():
     """
     Shows the manager menu and collects the input.
@@ -120,9 +154,6 @@ def show_manager_menu():
                 manager_command_with_args = manager_command.split(";")
                 manager_command = manager_command_with_args[0]
         
-        if manager_command == consts.MGR_EXIT or manager_command == consts.MANAGER_SUPPORTED_COMMANDS[consts.MGR_EXIT]:
-            stub.disconnect()
-            return
         
         # if command was a number, call the function that will ask for the args,
         # else it will append the user id and assign it to the request variable
@@ -133,41 +164,12 @@ def show_manager_menu():
             manager_command_with_args.append(USER_ID)
             request = manager_command_with_args
 
-        stub.send_request(request)
+        response = stub.send_request(request)
 
+        if request[0] == consts.MGR_EXIT and response[1] == True:
+            stub.disconnect()
+            return
 
-
-def validate_user_command(command_and_args: list) -> bool:
-    """
-    Validates a user command and its args.
-    """
-    command = command_and_args[0]
-
-    if command == consts.USER_SUPPORTED_COMMANDS[consts.USER_GET_ALL_ASSETS] or command == consts.USER_SUPPORTED_COMMANDS[consts.USER_GET_ASSETS_BALANCE]:
-        return len(command_and_args) == 1
-    
-    if command == consts.USER_SUPPORTED_COMMANDS[consts.USER_BUY] or command == consts.USER_SUPPORTED_COMMANDS[consts.USER_SELL]:
-        if len(command_and_args) != 3:
-            return False
-        try:
-            x = float(command_and_args[2])
-        except:
-            return False
-        else:
-            return True
-        
-    if command == consts.USER_SUPPORTED_COMMANDS[consts.USER_DEPOSIT] or command == consts.USER_SUPPORTED_COMMANDS[consts.USER_WITHDRAW]:
-        if len(command_and_args) != 2:
-            return False
-        try:
-            x = float(command_and_args[1])
-        except:
-            return False
-        else:
-            return True
-    
-    if command == consts.USER_SUPPORTED_COMMANDS[consts.USER_EXIT]:
-        return len(command_and_args) == 1
 
 def show_user_menu():
     """
@@ -208,9 +210,6 @@ def show_user_menu():
                 user_command_with_args = user_command.split(";")
                 user_command = user_command_with_args[0]
         
-        if user_command == consts.USER_EXIT or user_command == consts.USER_SUPPORTED_COMMANDS[consts.USER_EXIT]:
-            stub.disconnect()
-            return
         
         # if command was a number, call the function that will ask for the args,
         # else it will append the user id and assign it to the request variable
@@ -221,9 +220,10 @@ def show_user_menu():
             user_command_with_args.append(USER_ID)
             request = user_command_with_args
 
-        stub.send_request(request)
-        
-
+        response = stub.send_request(request)
+        if request[0] == consts.USER_EXIT and response[1] == True:
+            stub.disconnect()
+            return
 
 def main():
     

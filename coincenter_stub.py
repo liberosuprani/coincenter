@@ -1,4 +1,5 @@
 import pickle, socket, struct
+import coincenter_data as consts
 from net_client import *
 
 class CoincenterStub:
@@ -13,19 +14,12 @@ class CoincenterStub:
 
     def send_request(self, request):
         try:
-            bytes_request = pickle.dumps(request)
-            bytes_request_size = struct.pack("i", len(bytes_request))
-            
-            self.conn_sock.send(bytes_request_size)
-            self.conn_sock.send(bytes_request)
-
+            self.conn_sock.send(request)
             print(f"\nSENT: {request}")
-
-            bytes_response = self.conn_sock.receive_all()
-
-            response = pickle.loads(bytes_response)
-            print(f"RECV: {response}")
             
+            response = self.conn_sock.receive_all()
+            print(f"RECV: {response}")
+
             return response
         except socket.error as e:
             print(f"There was an error communicating with the server. {e}")

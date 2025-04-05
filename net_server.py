@@ -4,6 +4,8 @@ Número de aluno: 62220
 """
 import sock_utils
 import socket as s
+import pickle
+import struct
 
 class NetServer:
     def __init__(self, host, port):
@@ -27,9 +29,12 @@ class NetServer:
 
         return data
 
-    # TODO mandar o tamanho da mensagem
-    def send(self, data, client_socket):
-        client_socket.sendall(data)
+    def send(self, response, client_socket):
+        bytes_response = pickle.dumps(response)
+        bytes_response_size = struct.pack("i", len(bytes_response))
+
+        client_socket.sendall(bytes_response_size)
+        client_socket.sendall(bytes_response)
         
     def close(self):
         self._socket.close()
