@@ -70,8 +70,10 @@ def validate_manager_command(command_and_args: list) -> bool:
         if len(command_and_args) != 5:
             return False
         try:
-            x = float(command_and_args[3])
-            x = int(command_and_args[4])
+            asset_price = float(command_and_args[3])
+            asset_available_supply = int(command_and_args[4])
+            if asset_price <= 0 or asset_available_supply <= 0:
+                return False
         except:
             return False
         else:
@@ -98,7 +100,9 @@ def validate_user_command(command_and_args: list) -> bool:
         if len(command_and_args) != 3:
             return False
         try:
-            x = float(command_and_args[2])
+            quantity = float(command_and_args[2])
+            if quantity <= 0:
+                return False
         except:
             return False
         else:
@@ -108,7 +112,9 @@ def validate_user_command(command_and_args: list) -> bool:
         if len(command_and_args) != 2:
             return False
         try:
-            x = float(command_and_args[1])
+            amount = float(command_and_args[1])
+            if amount <= 0:
+                return False
         except:
             return False
         else:

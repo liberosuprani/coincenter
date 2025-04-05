@@ -161,9 +161,9 @@ class Client(ABC):
     def __init__(self, id):
         self.id = id
     
-    @abstractmethod
-    def process_request(self,_):
-        pass
+    # @abstractmethod
+    # def process_request(self,_):
+    #     pass
     
     
 class User(Client):
@@ -272,7 +272,7 @@ class User(Client):
             print("Could not sell asset: asset does not exist.")
             return False
         
-    def deposit(self, amount) -> bool:
+    def deposit(self, amount: float) -> bool:
         """
         Makes a deposit of the given amount.
         """
@@ -282,7 +282,7 @@ class User(Client):
         self._balance += amount
         return True
 
-    def withdraw(self, amount) -> bool:
+    def withdraw(self, amount: float) -> bool:
         """
         Withdraws the given amount.
         """
@@ -300,17 +300,18 @@ class User(Client):
         """
         Processes the request given and gives a response.
         """
-        
+    
         
 class Manager(Client):
     def __init__(self, user_id):
         super().__init__(user_id)
 
-    def add_asset(self, asset_name, asset_symbol, asset_price, asset_available_supply):
+    def add_asset(self, asset_name: str, asset_symbol: str, asset_price: float, asset_available_supply: int):
         was_asset_added = AssetController.add_asset(asset_symbol, asset_name, asset_price, asset_available_supply)
         return was_asset_added
 
     def get_all_assets(self):
+        print("oi2")
         result = AssetController.list_all_assets()
         if len(result) == 0:
             result = False
@@ -327,6 +328,13 @@ class Manager(Client):
 class ClientController:
     clients:Dict[int,Client] = {0:Manager(0)}
 
+    @staticmethod
+    def get_client(client_id):
+        if client_id not in ClientController.clients.keys():
+            ClientController.clients[client_id] = User(client_id)
+        
+        return ClientController.clients[client_id]
+    
     @staticmethod
     def process_request(request:list) -> list:
         client_id = int(request[-1])  # gets the id, which is the last element in the request

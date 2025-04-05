@@ -7,7 +7,6 @@ import sys, signal, select
 from net_server import *
 from coincenter_skeleton import *
 
-
 def handle_shutdown(signum, frame):
     global server
     server.close()
