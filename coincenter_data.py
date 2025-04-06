@@ -173,8 +173,7 @@ class User(Client):
         self._holdings: Dict[str, float] = {}
 
     def __str__(self):
-        output = [self._balance]
-        
+        output = ""
         for asset_symbol in self._holdings.keys():
             asset = AssetController.assets[asset_symbol]
             asset_string = str(asset.__str__())
@@ -190,18 +189,27 @@ class User(Client):
                 asset_string += f"{element};"
 
             asset_string = asset_string[:-1]
-
-            output.append(asset_string)
+        
+            output += asset_string + ":"
+        output = output[:-1]
+            
         return output
 
     def get_all_assets(self):
         result = AssetController.list_all_assets()
         if len(result) == 0:
             result = False
+        print(result)
         return result
 
     def get_assets_balance(self):
-        result = self.__str__()
+        assets = self.__str__()
+        result = [self._balance]
+
+        if assets != "":
+            assets = self.__str__().split(":")
+            result.extend(assets)
+
         if len(result) == 0:
             result = False
         return result
@@ -311,7 +319,6 @@ class Manager(Client):
         return was_asset_added
 
     def get_all_assets(self):
-        print("oi2")
         result = AssetController.list_all_assets()
         if len(result) == 0:
             result = False
@@ -326,21 +333,22 @@ class Manager(Client):
     
 
 class ClientController:
-    clients:Dict[int,Client] = {0:Manager(0)}
+    clients:Dict[int,Client] = {0:Manager(0), 3:User(3)}
+
 
     @staticmethod
-    def get_client(client_id):
+    def get_client(client_id: int):
         if client_id not in ClientController.clients.keys():
             ClientController.clients[client_id] = User(client_id)
-        
+
         return ClientController.clients[client_id]
     
-    @staticmethod
-    def process_request(request:list) -> list:
-        client_id = int(request[-1])  # gets the id, which is the last element in the request
+    # @staticmethod
+    # def process_request(request:list) -> list:
+    #     client_id = int(request[-1])  # gets the id, which is the last element in the request
         
-        if client_id not in ClientController.clients.keys():
-            ClientController.clients[client_id] = User(client_id)
+    #     if client_id not in ClientController.clients.keys():
+    #         ClientController.clients[client_id] = User(client_id)
         
-        result = ClientController.clients[client_id].process_request(request)            
-        return result
+    #     result = ClientController.clients[client_id].process_request(request)            
+    #     return result

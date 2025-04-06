@@ -10,7 +10,7 @@ import coincenter_data as consts
 USER_ID = 0
 stub = None
 
-def manager_command_to_request(command: int) -> str:
+def manager_command_to_request(command_number: int) -> str:
     """
     Parses a manager command into a request for the server.
     
@@ -20,15 +20,15 @@ def manager_command_to_request(command: int) -> str:
     Ensures:
     A concatenation of the given command with the arguments needed for it.
     """
-    request = [command]
+    request = [command_number]
     
-    if command == consts.MGR_ADD_ASSET:
+    if command_number == consts.MGR_ADD_ASSET:
         request.append(input("Asset name > "))     # asset's name
         request.append(input("Asset symbol > "))    # asset's symbol 
         request.append(float(input("Asset price > ")))   # asset's price (cast to float)
         request.append(float(input("Available amount > ")))    # asset's available amount
     
-    if command == consts.MGR_REMOVE_ASSET:
+    if command_number == consts.MGR_REMOVE_ASSET:
         request.append(input("Asset symbol > ")) # asset's symbol
     
     request.append(0)     # manager's id

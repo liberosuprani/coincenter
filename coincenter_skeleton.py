@@ -5,15 +5,16 @@ def validate_manager_request(command_and_args: list) -> bool:
     """
     Validates a manager command and its args.
     """
-    print(command_and_args)
     command = command_and_args[0]
 
     if command == consts.MGR_ADD_ASSET:
         if len(command_and_args) != 5:
             return False
         try:
-            x = float(command_and_args[3])
-            x = int(command_and_args[4])
+            asset_price = float(command_and_args[3])
+            asset_available_supply = int(command_and_args[4])
+            if asset_price <= 0 or asset_available_supply <= 0:
+                return False
         except:
             return False
         else:
@@ -40,7 +41,9 @@ def validate_user_request(command_and_args: list) -> bool:
         if len(command_and_args) != 3:
             return False
         try:
-            x = float(command_and_args[2])
+            quantity = float(command_and_args[2])
+            if quantity <= 0:
+                return False
         except:
             return False
         else:
@@ -50,7 +53,9 @@ def validate_user_request(command_and_args: list) -> bool:
         if len(command_and_args) != 2:
             return False
         try:
-            x = float(command_and_args[1])
+            amount = float(command_and_args[1])
+            if amount <= 0:
+                return False
         except:
             return False
         else:
@@ -94,10 +99,10 @@ class CoincenterSkeleton:
     def process_request(self, request) -> tuple[int, list]:
         try:
             request_command_number = request[0]
-            request_id = request[-1]
-
-            client = ClientController.get_client(request_id)
+            request_id = int(request[-1])
             
+            client = ClientController.get_client(request_id)
+
             if request_command_number == USER_EXIT or request_command_number == MGR_EXIT:
                 self.response = [request_command_number+1, True]
                 print(f"SENT: {self.response}") 
@@ -127,7 +132,7 @@ class CoincenterSkeleton:
 
             else:
                 # validates user request without the last element (id)
-                is_command_valid = validate_user_request(request[-1])
+                is_command_valid = validate_user_request(request[:-1])
 
                 if not is_command_valid:
                     print("Command does not exist or has invalid arguments.")
@@ -160,9 +165,9 @@ class CoincenterSkeleton:
             if self.response == False:
                 self.response = [False]
             else:
-                if self.response == True:
-                    self.response = [True]
-                else:
+                if type(self.response) != list:
+                    self.response = [self.response]
+                if True not in self.response:
                     self.response.insert(0, True)
 
             self.response.insert(0, request_command_number+1)
