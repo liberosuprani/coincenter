@@ -1,5 +1,9 @@
-import pickle, socket, struct
-import coincenter_data as consts
+"""
+Aplicações Distribuídas - Projeto 2 - coincenter_server.py
+Número de aluno: 62220
+"""
+
+import socket
 from net_client import *
 
 class CoincenterStub:

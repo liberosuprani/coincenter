@@ -1,7 +1,8 @@
 """
-Aplicações Distribuídas - Projeto 1 - coincenter_data.py
+Aplicações Distribuídas - Projeto 2 - coincenter_data.py
 Número de aluno: 62220
 """
+
 from typing import Dict
 from abc import ABC, abstractmethod
 
@@ -196,13 +197,18 @@ class User(Client):
         return output
 
     def get_all_assets(self):
+        """
+        Lists all the assets.
+        """
         result = AssetController.list_all_assets()
         if len(result) == 0:
-            result = False
-        print(result)
+            result = []
         return result
 
     def get_assets_balance(self):
+        """
+        Lists the user's balance and all the assets they possess. 
+        """
         assets = self.__str__()
         result = [self._balance]
 
@@ -304,10 +310,10 @@ class User(Client):
             print("Could not withdraw: unavailable amount.")
             return False
            
-    def process_request(self, request: list) -> list:
-        """
-        Processes the request given and gives a response.
-        """
+    # def process_request(self, request: list) -> list:
+    #     """
+    #     Processes the request given and gives a response.
+    #     """
     
         
 class Manager(Client):
@@ -321,7 +327,7 @@ class Manager(Client):
     def get_all_assets(self):
         result = AssetController.list_all_assets()
         if len(result) == 0:
-            result = False
+            result = []
         return result
         
     def remove_asset(self, asset_symbol):
@@ -331,10 +337,13 @@ class Manager(Client):
             result = False 
         return result
     
+    # def process_request(self, request: list) -> list:
+    #     """
+    #     Processes the request given and gives a response.
+    #     """
 
 class ClientController:
     clients:Dict[int,Client] = {0:Manager(0), 3:User(3)}
-
 
     @staticmethod
     def get_client(client_id: int):

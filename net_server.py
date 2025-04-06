@@ -1,7 +1,8 @@
 """
-Aplicações Distribuídas - Projeto 1 - net_server.py
+Aplicações Distribuídas - Projeto 2 - net_server.py
 Número de aluno: 62220
 """
+
 import sock_utils
 import socket as s
 import pickle
@@ -25,8 +26,6 @@ class NetServer:
             data = sock_utils.receive_all(client_socket)
         except s.error as e:
             raise s.error()
-
-
         return data
 
     def send(self, response, client_socket):

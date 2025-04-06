@@ -2,6 +2,7 @@
 Aplicações Distribuídas - Projeto 1 - sock_utils.py
 Número de aluno: 62220
 """
+
 import socket as s
 import sys, struct, pickle
 
@@ -46,6 +47,11 @@ def create_tcp_client_socket(address='localhost', port=9999):
         sys.exit(1)
 
 def receive_all(socket_receiver: s.socket):
+    """
+    Calls socket.recv twice for the given socket.
+    The first call is to receive the size of the data, whereas the second
+    is to receive the data itself.
+    """
     try:
         data_size_bytes = socket_receiver.recv(4)
         data_size = struct.unpack("i", data_size_bytes)[0]

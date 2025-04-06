@@ -1,9 +1,11 @@
-import pickle
-
 """
 Aplicações Distribuídas - Projeto 1 - net_client.py
 Número de aluno: 62220
 """
+
+import pickle
+import socket as s
+
 import sock_utils, struct
 
 class NetClient:
@@ -17,10 +19,12 @@ class NetClient:
         self.send_my_info(f"{self._id}")
      
     def send_my_info(self, info):
+        """
+        Sends the given info to the server
+        """
         info = info.encode()
         self._socket.sendall(info)
 
-    # TODO mandar o tamanho da mensagem
     def send(self, request):
         bytes_request = pickle.dumps(request)
         bytes_request_size = struct.pack("i", len(bytes_request))
@@ -32,7 +36,10 @@ class NetClient:
         return data
     
     def receive_all(self):
-        data = sock_utils.receive_all(self._socket)
+        try:
+            data = sock_utils.receive_all(self._socket)
+        except s.error as e:
+            raise s.error()
         return data
     
     def close(self):

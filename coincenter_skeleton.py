@@ -1,3 +1,8 @@
+"""
+Aplicações Distribuídas - Projeto 2 - coincenter_server.py
+Número de aluno: 62220
+"""
+
 from coincenter_data import *
 import coincenter_data as consts
 
@@ -113,8 +118,8 @@ class CoincenterSkeleton:
                 is_command_valid = validate_manager_request(request[:-1])
 
                 if not is_command_valid:
-                    print("Command does not exist or has invalid arguments.")
-                    return [request_command_number+1, False]
+                    self.response = [0, "Error: invalid command"]
+                    print(f"SENT: {self.response}") 
 
                 if request_command_number == MGR_ADD_ASSET:
                     asset_name = request[1]
@@ -135,8 +140,8 @@ class CoincenterSkeleton:
                 is_command_valid = validate_user_request(request[:-1])
 
                 if not is_command_valid:
-                    print("Command does not exist or has invalid arguments.")
-                    return [request_command_number+1, False]
+                    self.response = [0, "Error: invalid command"]
+                    print(f"SENT: {self.response}") 
 
                 if request_command_number == USER_GET_ALL_ASSETS:
                     self.user_get_all_assets(client)
@@ -165,7 +170,8 @@ class CoincenterSkeleton:
             if self.response == False:
                 self.response = [False]
             else:
-                if type(self.response) != list:
+                # if response was not a list or was an empty list, casts it into a list with the response inside
+                if type(self.response) != list or (type(self.response) == list and len(self.response) == 0):
                     self.response = [self.response]
                 if True not in self.response:
                     self.response.insert(0, True)

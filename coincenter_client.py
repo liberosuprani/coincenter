@@ -1,5 +1,5 @@
 """
-Aplicações Distribuídas - Projeto 1 - coincenter_client.py
+Aplicações Distribuídas - Projeto 2 - coincenter_client.py
 Número de aluno: 62220
 """
 
