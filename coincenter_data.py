@@ -321,16 +321,25 @@ class Manager(Client):
         super().__init__(user_id)
 
     def add_asset(self, asset_name: str, asset_symbol: str, asset_price: float, asset_available_supply: int):
+        """
+        Adds an asset to the asset list
+        """
         was_asset_added = AssetController.add_asset(asset_symbol, asset_name, asset_price, asset_available_supply)
         return was_asset_added
 
     def get_all_assets(self):
+        """
+        Returns a list of all the assets
+        """
         result = AssetController.list_all_assets()
         if len(result) == 0:
             result = []
         return result
         
     def remove_asset(self, asset_symbol):
+        """
+        Remove an asset from the asset list
+        """
         was_asset_removed = AssetController.remove_asset(asset_symbol)
         result = asset_symbol
         if not was_asset_removed:
@@ -347,6 +356,10 @@ class ClientController:
 
     @staticmethod
     def get_client(client_id: int):
+        """
+        Returns the client with the given id. If the id does not exist,
+        a client with this id is created.
+        """
         if client_id not in ClientController.clients.keys():
             ClientController.clients[client_id] = User(client_id)
 
