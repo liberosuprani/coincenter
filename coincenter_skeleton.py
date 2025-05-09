@@ -121,6 +121,8 @@ class CoincenterSkeleton:
                     self.response = [0, "Error: invalid command"]
                     print(f"SENT: {self.response}") 
 
+                
+
                 if request_command_number == MGR_ADD_ASSET:
                     asset_name = request[1]
                     asset_symbol = request[2]

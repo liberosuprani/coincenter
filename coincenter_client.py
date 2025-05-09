@@ -216,7 +216,6 @@ def show_user_menu():
                 user_command_with_args = user_command.split(";")
                 user_command = user_command_with_args[0]
         
-        
         # if command was a number, call the function that will ask for the args,
         # else it will append the user id and assign it to the request variable
         if user_command in valid_command_numbers:

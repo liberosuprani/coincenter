@@ -352,7 +352,7 @@ class Manager(Client):
     #     """
 
 class ClientController:
-    clients:Dict[int,Client] = {0:Manager(0), 3:User(3)}
+    clients:Dict[int,Client] = {0:Manager(0)}
 
     @staticmethod
     def get_client(client_id: int):
