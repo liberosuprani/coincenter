@@ -1,0 +1,22 @@
+FLUXO DE DADOS:
+
+1) coincenter_flask recebe as requisições
+
+2) coincenter_flask chama ou ClientController ou AssetController, chamando o método específico para aquela operação
+
+3) Ou faz uma query para pegar dados de um objeto se preciso (usando Repository), ou cria um objeto passando no construtor os argumentos passados pelo usuário
+
+4) 
+
+
+---------------
+
+OPERAÇÕES MANAGER
+
+- create_new_asset
+
+- get_asset
+
+- get_all_assets
+
+- 
