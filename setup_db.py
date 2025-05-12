@@ -22,4 +22,17 @@ def get_db(db_name = "coincenter.db"):
     return g.db
 
 if __name__ ==  "__main__":
-    get_db()
+    is_db_created = isfile("coincenter.db")
+
+    db_connection = sqlite3.connect("coincenter.db")
+    cursor = db_connection.cursor()
+
+    if not is_db_created: 
+        with open("schema.sql", "r") as f:
+            schema = f.read()
+            cursor.executescript(schema)
+
+    query = "INSERT INTO Assets(asset_symbol, asset_name, price, available_quantity)" \
+        " VALUES (?, ?, ?, ?);"
+
+    cursor.execute(query, ("BTC", "BITCOIN", 1000, 10))

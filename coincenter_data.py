@@ -9,15 +9,11 @@ from setup_db import get_db
 # constants with the number of each command
 
 class Asset:
-    def __init__(self, symbol:str, name:str, price:float, available_supply:int):
+    def __init__(self, symbol:str, name:str, price:float, available_quantity:int):
         self.symbol = symbol
         self.name = name
         self.price = price
-        self.available_supply = available_supply
-
-    # def __str__(self):
-    #     result = f"{self._name};{self._symbol};{self._price};{self._available_supply}"
-    #     return result
+        self.available_quantity = available_quantity
 
     def check_availability(self, quantity:int) -> bool:
         """
@@ -29,10 +25,10 @@ class Asset:
         Ensures:
         True if is available, False if it is not.
         """
-        # returns True if quantity is greater than 0 and not greater than available_supply
-        return quantity > 0 and quantity <= self.available_supply
+        # returns True if quantity is greater than 0 and not greater than available_quantity
+        return quantity > 0 and quantity <= self.available_quantity
 
-    def decrease_available_supply(self, quantity:int) -> bool:
+    def decrease_available_quantity(self, quantity:int) -> bool:
         """
         Decreases the amount of the asset in a given quantity.
         
@@ -43,11 +39,11 @@ class Asset:
         True if was completed, False if it was not.
         """
         if self.check_availability(quantity):
-            self.available_supply -= quantity
+            self.available_quantity -= quantity
             return True
         return False
 
-    def increase_available_supply(self, quantity):
+    def increase_available_quantity(self, quantity):
         """
         Decreases the amount of the asset in a given quantity.
         
@@ -58,7 +54,7 @@ class Asset:
         True if was completed, False if it was not.
         """
         if quantity > 0:
-            self.available_supply += quantity
+            self.available_quantity += quantity
             
 
 class Client(ABC):
@@ -105,7 +101,7 @@ class Manager(Client):
     def __init__(self, id):
         super().__init__(id)
 
-    def create_new_asset(self, asset_name: str, asset_symbol: str, asset_price: float, asset_available_supply: int):
+    def create_new_asset(self, asset_name: str, asset_symbol: str, asset_price: float, asset_available_quantity: int):
         """
         Adds an asset to the asset list
         """
@@ -115,10 +111,10 @@ class Manager(Client):
 class AssetController:
 
     @staticmethod
-    def create_new_asset(symbol: str, name: str, price: float, available_supply: int) -> bool:
+    def create_new_asset(symbol: str, name: str, price: float, available_quantity: int) -> bool:
         asset = AssetRepository.get(symbol)
         if asset is None:
-            asset = Asset(symbol, name, price, available_supply)
+            asset = Asset(symbol, name, price, available_quantity)
             AssetRepository.add(asset)
             return True
         return False
@@ -136,22 +132,24 @@ class AssetRepository:
     def add(asset: Asset):
         db = get_db()
         cursor = db.cursor()
-        query = "INSERT INTO Assets(asset_symbol, asset_name, price, available_supply)" \
+        query = "INSERT INTO Assets(asset_symbol, asset_name, price, available_quantity)" \
         " VALUES (?, ?, ?, ?);"
-        cursor.execute(query, (asset.symbol, asset.name, asset.price, asset.available_supply))
+        cursor.execute(query, (asset.symbol, asset.name, asset.price, asset.available_quantity))
+        db.commit()
 
     @staticmethod
     def get(symbol: str):
-        query = "SELECT * from Assets WHERE asset_symbol = ?"
         db = get_db()
         cursor = db.cursor()
-        cursor.execute(query, (symbol))
+        query = "SELECT * from Assets WHERE asset_symbol = ?"
+        cursor.execute(query, (symbol,))
         row = cursor.fetchone()
         if row is None:
             return None
         return Asset(
-            row["asset_symbol"], row["asset_name"], row["price"], row["available_supply"]
+            row["asset_symbol"], row["asset_name"], row["price"], row["available_quantity"]
         )
+
 
     @staticmethod
     def get_all():
