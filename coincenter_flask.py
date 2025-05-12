@@ -13,10 +13,19 @@ app = Flask(__name__)
 @app.route("/asset", methods = ["POST"])
 @app.route("/asset/<string:symbol>", methods = ["GET"])
 def asset(symbol=None):
+    r = make_response()
+    r.headers["Content-type"] = "application/api-problem+json"
 
     if request.method == "GET":
         response = AssetController.get_asset(symbol)
-        return response
+        if response:
+            r.status_code = 200
+            r.data = json.dumps(response)
+        else:
+            r.data = json.dumps({
+                "title" : "There is not an asset with this symbol.",
+                "status" : 404
+            })
 
     if request.method == "POST":
         request_data = json.loads(request.data)
@@ -25,12 +34,8 @@ def asset(symbol=None):
         name = request_data["name"]
         price = request_data["price"]
         available_quantity = request_data["available_quantity"]
-
-        r = make_response()
-        r.headers["Content-type"] = "application/api-problem+json"
-
     
-        response = AssetController.create_new_asset(
+        response = AssetController.create_new_asset (
             symbol, name, price, available_quantity
         )
 
@@ -42,7 +47,7 @@ def asset(symbol=None):
                 "status" : 409,
             })
         
-        return r
+    return r
     
 
 # @app.route("/assetset", methods = ["GET"])

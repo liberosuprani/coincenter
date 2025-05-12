@@ -256,18 +256,13 @@ import sys
 import requests
 
 def main():
-    print("-- Teste create_asset --")
-    symbol = input("Símbolo: ")
-    name = input("Nome: ")
-    price = float(input("Preço: "))
-    available_quantity = int(input("Quantidade disponível: "))
+    print("-- Teste get_asset --")
+    # symbol = input("Símbolo: ")
+    # name = input("Nome: ")
+    # price = float(input("Preço: "))
+    # available_quantity = int(input("Quantidade disponível: "))
 
-    r = requests.post("http://localhost:5000/asset", json = {
-        "symbol":symbol,
-        "name":name,
-        "price":price,
-        "available_quantity":available_quantity
-    })
+    r = requests.get("http://localhost:5000/asset/doge")
 
     print(r.text)
 

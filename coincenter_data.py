@@ -121,7 +121,15 @@ class AssetController:
 
     @staticmethod
     def get_asset(symbol: str) -> dict:
-        pass
+        asset = AssetRepository.get(symbol)
+        if asset is None:
+            return None
+        return {
+            "symbol" : asset.symbol,
+            "name" : asset.name,
+            "price" : asset.price,
+            "available_quantity" : asset.available_quantity
+        }
 
     @staticmethod
     def get_all_assets() -> list:
