@@ -6,7 +6,6 @@ Número de aluno: 62220
 from flask import Flask, request, make_response
 import json
 from coincenter_data import AssetController, ClientController
-from setup_db import get_db
 
 app = Flask(__name__)
 
@@ -50,58 +49,62 @@ def asset(symbol=None):
     return r
     
 
-# @app.route("/assetset", methods = ["GET"])
-# def asset_set():
-#     g.db, g.cursor = connect_db()
-#     response = AssetController.get_all_assets()
-#     return response
+@app.route("/assetset", methods = ["GET"])
+def asset_set():
+    r = make_response()
+    r.headers["Content-type"] = "application/api-problem+json"
+
+    response = AssetController.get_all_assets()
+
+    if response:
+        r.status_code = 200
+        r.data = json.dumps(response)
+    else:
+        r.data = json.dumps({
+            "title" : "There are no assets registered in the system.",
+            "status" : 404
+        })
+    return r
 
 
 # @app.route("/login/", methods = ["POST"])
 # def login(id):
-#     g.db, g.cursor = connect_db()
 #     response = ClientController.add_new_client(id)
 #     return response
 
 
 # @app.route("/user<int:id>", methods = ["GET"])
 # def user(id):
-#     g.db, g.cursor = connect_db()
 #     response = ClientController.get_user_balance_assets(id)
 #     return response
 
 
 # @app.route("/buy", methods = ["POST"])
 # def buy_asset(id, symbol):
-#     g.db, g.cursor = connect_db()
 #     response = ClientController.buy_asset(id, symbol)
 #     return response
 
 
 # @app.route("/sell", methods = ["POST"])
 # def sell_asset(id, symbol):
-#     g.db, g.cursor = connect_db()
 #     response = ClientController.sell_asset(id, symbol)
 #     return response
 
 
 # @app.route("/deposit", methods = ["POST"])
 # def deposit(id, amount):
-#     g.db, g.cursor = connect_db()
 #     response = ClientController.deposit(id, amount)
 #     return response
 
 
 # @app.route("/withdraw", methods = ["POST"])
 # def withdraw(id, amount):
-#     g.db, g.cursor = connect_db()
 #     response = ClientController.withdraw(id, amount)
 #     return response
 
 
 # @app.route("/transactions", methods = ["GET"])
 # def transactions(id):
-#     g.db, g.cursor = connect_db()
 #     response = ClientController.transactions()
 #     return response
     

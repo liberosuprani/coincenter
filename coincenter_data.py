@@ -133,7 +133,18 @@ class AssetController:
 
     @staticmethod
     def get_all_assets() -> list:
-        pass
+        asset_list = AssetRepository.get_all()
+        if asset_list is None:
+            return asset_list
+        return [
+            {
+                "symbol" : a.symbol,
+                "name" : a.name,
+                "price" : a.price,
+                "available_quantity" : a.available_quantity
+            }
+            for a in asset_list
+        ]
 
 class AssetRepository:
     @staticmethod
@@ -146,12 +157,14 @@ class AssetRepository:
         db.commit()
 
     @staticmethod
-    def get(symbol: str):
+    def get(symbol: str) -> Asset:
         db = get_db()
         cursor = db.cursor()
+
         query = "SELECT * from Assets WHERE asset_symbol = ?"
         cursor.execute(query, (symbol,))
         row = cursor.fetchone()
+
         if row is None:
             return None
         return Asset(
@@ -160,8 +173,22 @@ class AssetRepository:
 
 
     @staticmethod
-    def get_all():
-        pass
+    def get_all() -> list:
+        db = get_db()
+        cursor = db.cursor()
+
+        query = "SELECT * FROM Assets"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+
+        asset_list = []
+        if len(rows) == 0:
+            return None
+        for row in rows:
+            asset = Asset(row["asset_symbol"], row["asset_name"], row["price"], row["available_quantity"])
+            asset_list.append(asset)
+        return asset_list
+
 
 
 class ClientController:
