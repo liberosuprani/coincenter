@@ -260,19 +260,29 @@ def main():
     # symbol = input("Símbolo: ")
     # name = input("Nome: ")
     # price = float(input("Preço: "))
-    # available_quantity = int(input("Quantidade disponível: "))
+    # # available_quantity = int(input("Quantidade disponível: "))
 
     # asset = {
     #     "symbol" : symbol,
     #     "name" : name,
     #     "price" : price,
-    #     "available_quantity" : available_quantity
+    #     # "available_quantity" : available_quantity
     # }
 
     # r = requests.post("http://localhost:5000/asset", json = asset)
 
+    ######################################################################
+
     # print("-- Teste get_all_assets --")
     # r = requests.get("http://localhost:5000/assetset")
+
+    ######################################################################
+
+    client_id = 0
+    a = {
+        "client_id" : client_id
+    }
+    r = requests.post("http://localhost:5000/login", json = a) 
 
     print(r.text)
 

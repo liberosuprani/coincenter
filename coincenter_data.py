@@ -5,6 +5,7 @@ Número de aluno: 62220
 
 from abc import ABC
 from setup_db import get_db
+from flask import session
 
 # constants with the number of each command
 
@@ -190,12 +191,24 @@ class AssetRepository:
         return asset_list
 
 
-
 class ClientController:
-    @staticmethod
-    def add_new_user(id: int) -> bool:
-        pass
 
+    @staticmethod
+    def login(id: int) -> bool:
+        client = ClientRepository.get(id)   
+
+        if client is None:
+            print("arroz")
+            if id == 0:
+                client = Manager(id)
+            else:
+                client = User(id)
+            ClientRepository.add(client)
+            
+        session["client_id"] = id
+        print(session["client_id"])
+        return True
+    
     @staticmethod
     def get_user_balance_assets(id: int) -> list:
         pass
@@ -227,11 +240,34 @@ class ClientController:
 class ClientRepository:
     @staticmethod
     def add(client: Client):
-        pass
+        db = get_db()
+        cursor = db.cursor()
+
+        if isinstance(client, Manager):
+            query = "INSERT INTO Clients(client_id, is_manager) VALUES (?, ?);"
+            cursor.execute(query, (client.id, 1))
+        else:
+            query = "INSERT INTO Clients(client_id, is_manager, balance) VALUES (?, ?, ?);"
+            cursor.execute(query, (client.id, 0, client.balance))
+        
+        db.commit()
 
     @staticmethod
-    def get(id: int):
-        pass
+    def get(id: int) -> Client:
+        db = get_db()
+        cursor = db.cursor()
+        query = "SELECT * from Clients WHERE client_id = ?;"
+        cursor.execute(query, (id,))
+        row = cursor.fetchone()
+
+        if row == None:
+            return None
+        
+        if row["is_manager"] == 1:
+            return Manager(row["client_id"])
+        
+        return User(row["client_id"], row["balance"])
+
 
     @staticmethod
     def get_balance_assets(id: int):

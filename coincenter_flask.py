@@ -3,15 +3,16 @@ Aplicações Distribuídas - Projeto 2 - coincenter_server.py
 Número de aluno: 62220
 """
 
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, session
 import json
 from coincenter_data import AssetController, ClientController
 
 app = Flask(__name__)
+app.secret_key = "chave secreta"
 
 @app.route("/asset", methods = ["POST"])
 @app.route("/asset/<string:symbol>", methods = ["GET"])
-def asset(symbol=None):
+def asset():
     r = make_response()
     r.headers["Content-type"] = "application/api-problem+json"
 
@@ -27,19 +28,30 @@ def asset(symbol=None):
             })
 
     if request.method == "POST":
-        request_data = json.loads(request.data)
+        try:
+            req = request.get_json()
+            symbol = req["symbol"]
+            name = req["name"]
+            price = req["price"]
+            available_quantity = req["available_quantity"]
+        except KeyError:
+            r.status_code = 400
+            r.data = json.dumps({
+                "title" : "There were missing arguments for the creation of the asset.",
+                "status" : 400
+            })
+            return r
 
-        symbol = request_data["symbol"]
-        name = request_data["name"]
-        price = request_data["price"]
-        available_quantity = request_data["available_quantity"]
-    
         response = AssetController.create_new_asset (
             symbol, name, price, available_quantity
         )
 
         if response:
-            r.status_code = 201
+            r.data = json.dumps({
+                "title" : "Asset was created successfully.",
+                "status" : 201
+
+            })
         else:
             r.data = json.dumps({
                 "title" : "There is already an asset with this symbol.",
@@ -67,11 +79,18 @@ def asset_set():
     return r
 
 
-# @app.route("/login/", methods = ["POST"])
-# def login(id):
-#     response = ClientController.add_new_client(id)
-#     return response
+@app.route("/login", methods = ["POST"])
+def login():
+    r = make_response()
+    r.headers["Content-type"] = "application/api-problem+json"
 
+    req = request.get_json()
+    client_id = req["client_id"]
+    
+    response = ClientController.login(client_id)
+    if response:
+        r.status_code = 200
+    return r
 
 # @app.route("/user<int:id>", methods = ["GET"])
 # def user(id):

@@ -2,21 +2,21 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE Clients (
     client_id INTEGER PRIMARY KEY,
-    is_manager BOOLEAN,
+    is_manager BOOLEAN NOT NULL,
     balance FLOAT
 );
 
 CREATE TABLE Assets (
     asset_symbol VARCHAR(5) PRIMARY KEY,
-    asset_name VARCHAR,
-    price FLOAT,
-    available_quantity INTEGER
+    asset_name VARCHAR NOT NULL,
+    price FLOAT NOT NULL,
+    available_quantity INTEGER NOT NULL
 );
 
 CREATE TABLE ClientAssets (
-    client_id INTEGER,
-    asset_symbol VARCHAR(5),
-    quantity FLOAT,
+    client_id INTEGER NOT NULL,
+    asset_symbol VARCHAR(5) NOT NULL,
+    quantity FLOAT NOT NULL,
 
     FOREIGN KEY (client_id)
     REFERENCES Clients(client_id)
@@ -29,12 +29,12 @@ CREATE TABLE ClientAssets (
 
 CREATE TABLE Transactions (
     id INTEGER AUTO_INCREMENT PRIMARY KEY,
-    client_id INTEGER,
-    asset_symbol VARCHAR(5),
-    [type] VARCHAR,
-    quantity FLOAT,
-    price FLOAT,
-    [time] DATE,
+    client_id INTEGER NOT NULL,
+    asset_symbol VARCHAR(5) NOT NULL,
+    [type] VARCHAR NOT NULL,
+    quantity FLOAT NOT NULL,
+    price FLOAT NOT NULL,
+    [time] DATE NOT NULL,
 
     FOREIGN KEY (client_id)
     REFERENCES Clients(client_id),
