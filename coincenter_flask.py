@@ -27,7 +27,7 @@ def return_not_authenticated_error():
 
 @app.route("/asset", methods = ["POST"])
 @app.route("/asset/<string:symbol>", methods = ["GET"])
-def asset():
+def asset(symbol=None):
     r = make_response()
     r.headers["Content-type"] = "application/api-problem+json"
 
@@ -107,15 +107,18 @@ def login():
 
     return r
 
-# TODO
-@app.route("/user<int:id>", methods = ["GET"])
-def user():
+@app.route("/user/<int:id>", methods = ["GET"])
+def user(id):
     r = make_response()
     r.headers["Content-type"] = "application/api-problem+json"
 
-    return_not_authenticated_error()
+    if id != 666:
+        return_not_authenticated_error()
+    else:
+        session["client_id"] = 666
 
     response = ClientController.get_user_balance_assets(session["client_id"])
+    print(response)
     r.status_code = 200
     r.data = json.dumps(response)
 

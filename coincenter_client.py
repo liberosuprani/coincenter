@@ -266,10 +266,16 @@ def main():
     #     "symbol" : symbol,
     #     "name" : name,
     #     "price" : price,
-    #     # "available_quantity" : available_quantity
+    #     "available_quantity" : available_quantity
     # }
 
     # r = requests.post("http://localhost:5000/asset", json = asset)
+
+    ######################################################################
+
+    # print("-- Teste get_asset")
+    # asset_symbol = "BTC"
+    # r = requests.get(f"http://localhost:5000/asset/{asset_symbol}")
 
     ######################################################################
 
@@ -283,6 +289,12 @@ def main():
     #     "client_id" : client_id
     # }
     # r = requests.post("http://localhost:5000/login", json = a) 
+
+    ######################################################################
+
+    # print("-- Teste get_user_balance_assets --")
+    # client_id = 666
+    # r = requests.get(f"http://localhost:5000/user/{client_id}")
 
     ######################################################################
 

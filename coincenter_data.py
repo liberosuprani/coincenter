@@ -214,8 +214,8 @@ class AssetRepository:
         cursor = db.cursor()
 
         query = "SELECT asset_symbol FROM ClientAssets WHERE client_id = ?"
-        cursor.execute(query, id)
-        rows = cursor.fetchall
+        cursor.execute(query, (id,))
+        rows = cursor.fetchall()
 
         asset_list = []
         if len(rows) == 0:
@@ -250,7 +250,7 @@ class ClientController:
             user_assets = AssetRepository.get_by_user_id(id)
             return {
                 "balance" : balance,
-                "assets" : user_assets
+                "assets" : user_assets if user_assets is not None else "No assets"
             }
 
         return None
