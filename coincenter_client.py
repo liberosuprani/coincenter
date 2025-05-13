@@ -3,7 +3,7 @@ Aplicações Distribuídas - Projeto 2 - coincenter_client.py
 Número de aluno: 62220
 """
 
-import sys
+# import sys
 # import coincenter_data as consts
 
 # USER_ID = 0
@@ -260,7 +260,7 @@ def main():
     # symbol = input("Símbolo: ")
     # name = input("Nome: ")
     # price = float(input("Preço: "))
-    # # available_quantity = int(input("Quantidade disponível: "))
+    # available_quantity = int(input("Quantidade disponível: "))
 
     # asset = {
     #     "symbol" : symbol,
@@ -278,11 +278,13 @@ def main():
 
     ######################################################################
 
-    client_id = 0
-    a = {
-        "client_id" : client_id
-    }
-    r = requests.post("http://localhost:5000/login", json = a) 
+    # client_id = 666
+    # a = {
+    #     "client_id" : client_id
+    # }
+    # r = requests.post("http://localhost:5000/login", json = a) 
+
+    ######################################################################
 
     print(r.text)
 

@@ -9,6 +9,18 @@ from flask import session
 
 # constants with the number of each command
 
+class AssetAlreadyExistsException(Exception):
+    pass
+class InvalidAssetSymbol(Exception):
+    pass
+class AssetNotFoundException(Exception):
+    pass
+class NotEnoughBalanceException(Exception):
+    pass
+class AssetNotEnoughQuantityException(Exception):
+    pass
+
+
 class Asset:
     def __init__(self, symbol:str, name:str, price:float, available_quantity:int):
         self.symbol = symbol
@@ -70,6 +82,10 @@ class User(Client):
             raise Exception("Balance cannot be lower than zero.")
         self.balance = 0.0
 
+    # TODO
+    def buy_asset(quantity: float, asset: Asset) -> bool:
+        pass
+
     def deposit(self, amount: float) -> bool:
         """
         Makes a deposit of the given amount.
@@ -112,19 +128,20 @@ class Manager(Client):
 class AssetController:
 
     @staticmethod
-    def create_new_asset(symbol: str, name: str, price: float, available_quantity: int) -> bool:
+    def create_new_asset(symbol: str, name: str, price: float, available_quantity: int):
         asset = AssetRepository.get(symbol)
-        if asset is None:
-            asset = Asset(symbol, name, price, available_quantity)
-            AssetRepository.add(asset)
-            return True
-        return False
+
+        if asset is not None:
+            raise AssetAlreadyExistsException("There is already an asset with this symbol")
+
+        asset = Asset(symbol, name, price, available_quantity)
+        AssetRepository.add(asset)
 
     @staticmethod
     def get_asset(symbol: str) -> dict:
         asset = AssetRepository.get(symbol)
         if asset is None:
-            return None
+            raise AssetNotFoundException("There is not an asset with this symbol.")
         return {
             "symbol" : asset.symbol,
             "name" : asset.name,
@@ -135,8 +152,9 @@ class AssetController:
     @staticmethod
     def get_all_assets() -> list:
         asset_list = AssetRepository.get_all()
+
         if asset_list is None:
-            return asset_list
+            raise AssetNotFoundException("There are no assets registered in the system.")
         return [
             {
                 "symbol" : a.symbol,
@@ -152,6 +170,7 @@ class AssetRepository:
     def add(asset: Asset):
         db = get_db()
         cursor = db.cursor()
+        
         query = "INSERT INTO Assets(asset_symbol, asset_name, price, available_quantity)" \
         " VALUES (?, ?, ?, ?);"
         cursor.execute(query, (asset.symbol, asset.name, asset.price, asset.available_quantity))
@@ -172,7 +191,6 @@ class AssetRepository:
             row["asset_symbol"], row["asset_name"], row["price"], row["available_quantity"]
         )
 
-
     @staticmethod
     def get_all() -> list:
         db = get_db()
@@ -190,15 +208,31 @@ class AssetRepository:
             asset_list.append(asset)
         return asset_list
 
+    @staticmethod
+    def get_by_user_id(id: int) -> list:
+        db = get_db()
+        cursor = db.cursor()
+
+        query = "SELECT asset_symbol FROM ClientAssets WHERE client_id = ?"
+        cursor.execute(query, id)
+        rows = cursor.fetchall
+
+        asset_list = []
+        if len(rows) == 0:
+            return None
+        for row in rows:
+            asset = AssetRepository.get(row["asset_symbol"])
+            asset_list.append(asset)
+        return asset_list
+
 
 class ClientController:
 
     @staticmethod
-    def login(id: int) -> bool:
+    def login(id: int):
         client = ClientRepository.get(id)   
 
         if client is None:
-            print("arroz")
             if id == 0:
                 client = Manager(id)
             else:
@@ -206,20 +240,40 @@ class ClientController:
             ClientRepository.add(client)
             
         session["client_id"] = id
-        print(session["client_id"])
-        return True
     
     @staticmethod
-    def get_user_balance_assets(id: int) -> list:
-        pass
+    def get_user_balance_assets(id: int) -> dict:
+        client = ClientRepository.get(id)
+
+        if isinstance(client, User):
+            balance = client.balance
+            user_assets = AssetRepository.get_by_user_id(id)
+            return {
+                "balance" : balance,
+                "assets" : user_assets
+            }
+
+        return None
 
     @staticmethod
-    def get_client(id: int):
-        pass
+    def buy_asset(id:int, symbol: str, quantity: int) -> bool:
+        client = ClientRepository.get(id)
+        asset = AssetRepository.get(symbol)
 
-    @staticmethod
-    def buy_asset(id:int, symbol: str) -> bool:
-        pass
+        if asset is None:
+            raise AssetNotFoundException("There is not an asset with this symbol.")
+        
+        if isinstance(client, User):
+            if not client.buy_asset(quantity, asset):
+                raise NotEnoughBalanceException("Not enough balance.")
+            if not asset.decrease_available_quantity(quantity):
+                raise AssetNotEnoughQuantityException("Asset is not available in this quantity.")
+            
+            AssetRepository.update_available_quantity(symbol, asset.available_quantity)
+            ClientRepository.update_balance(id, client.balance)
+            ClientRepository.add_asset(id, symbol)
+
+            return True
 
     @staticmethod
     def sell_asset(id:int, symbol: str) -> bool:
@@ -236,6 +290,7 @@ class ClientController:
     @staticmethod
     def transactions() -> str:
         pass
+
 
 class ClientRepository:
     @staticmethod
@@ -256,6 +311,7 @@ class ClientRepository:
     def get(id: int) -> Client:
         db = get_db()
         cursor = db.cursor()
+
         query = "SELECT * from Clients WHERE client_id = ?;"
         cursor.execute(query, (id,))
         row = cursor.fetchone()
@@ -268,7 +324,9 @@ class ClientRepository:
         
         return User(row["client_id"], row["balance"])
 
-
+    #TODO
     @staticmethod
-    def get_balance_assets(id: int):
+    def update_balance(id: int, balance: float):
         pass
+
+        
