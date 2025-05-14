@@ -138,13 +138,26 @@ def buy_asset():
     return_not_authenticated_error()
 
     symbol = request.get_json()["symbol"]
+    quantity = request.get_json()["quantity"]
 
-    response = ClientController.buy_asset(session["client_id"], symbol)
+    try:
+        response = ClientController.buy_asset(10, symbol, quantity)
+        r.data = json.dumps({
+            "title" : "Asset bought succesfully.",
+            "status" : 200
+        })
+    except exceptions.AssetNotFoundException as e:
+        r.data = json.dumps({
+            "title" : str(e),
+            "status" : 404
+        })
+    except Exception as e:
+        r.data = json.dumps({
+            "title" : str(e),
+            "status" : 406
+        })
 
-    if not response:
-        pass
-
-    return response
+    return r
 
 
 # @app.route("/sell", methods = ["POST"])

@@ -284,7 +284,7 @@ def main():
 
     ######################################################################
 
-    # client_id = 666
+    # client_id = 10
     # a = {
     #     "client_id" : client_id
     # }
@@ -297,6 +297,13 @@ def main():
     # r = requests.get(f"http://localhost:5000/user/{client_id}")
 
     ######################################################################
+
+    # print("-- Teste buy_asset --")
+    # a = {
+    #     "symbol": "BTC",
+    #     "quantity" : 1 
+    # }
+    # r = requests.post("http://localhost:5000/buy", json=a)
 
     print(r.text)
 

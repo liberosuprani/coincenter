@@ -22,18 +22,18 @@ class AssetNotEnoughQuantityException(Exception):
 
 
 class Asset:
-    def __init__(self, symbol:str, name:str, price:float, available_quantity:int):
+    def __init__(self, symbol:str, name:str, price:float, available_quantity:float):
         self.symbol = symbol
         self.name = name
         self.price = price
         self.available_quantity = available_quantity
 
-    def check_availability(self, quantity:int) -> bool:
+    def check_availability(self, quantity:float) -> bool:
         """
         Checks whether the asset is available in the given quantity.
         
         Requires:
-        - quantity int
+        - quantity float
         
         Ensures:
         True if is available, False if it is not.
@@ -41,12 +41,12 @@ class Asset:
         # returns True if quantity is greater than 0 and not greater than available_quantity
         return quantity > 0 and quantity <= self.available_quantity
 
-    def decrease_available_quantity(self, quantity:int) -> bool:
+    def decrease_available_quantity(self, quantity:float) -> bool:
         """
         Decreases the amount of the asset in a given quantity.
         
         Requires:
-        - quantity int
+        - quantity float
         
         Ensures:
         True if was completed, False if it was not.
@@ -56,12 +56,12 @@ class Asset:
             return True
         return False
 
-    def increase_available_quantity(self, quantity):
+    def increase_available_quantity(self, quantity: float):
         """
         Decreases the amount of the asset in a given quantity.
         
         Requires:
-        - quantity int
+        - quantity float
         
         Ensures:
         True if was completed, False if it was not.
@@ -80,11 +80,20 @@ class User(Client):
         super().__init__(id)
         if balance < 0:
             raise Exception("Balance cannot be lower than zero.")
-        self.balance = 0.0
+        if balance == 0:
+            self.balance = 1000000
+        else:
+            self.balance = balance
 
-    # TODO
-    def buy_asset(quantity: float, asset: Asset) -> bool:
-        pass
+    def buy_asset(self, quantity: float, asset: Asset) -> bool:
+        asset_price = asset.price
+        print("self.balance = ", self.balance)
+        print("qantity = ", quantity)
+        print("price = ", asset_price)
+        if self.balance < quantity * asset_price:
+            return False
+        self.balance -= quantity * asset_price
+        return True
 
     def deposit(self, amount: float) -> bool:
         """
@@ -224,6 +233,15 @@ class AssetRepository:
             asset = AssetRepository.get(row["asset_symbol"])
             asset_list.append(asset)
         return asset_list
+    
+    @staticmethod
+    def update_available_quantity(symbol: str, quantity: float):
+        db = get_db()
+        cursor = db.cursor()
+
+        query = "UPDATE Assets SET available_quantity = ? WHERE asset_symbol = ?;"
+        cursor.execute(query, (quantity, symbol))
+        db.commit()
 
 
 class ClientController:
@@ -256,7 +274,7 @@ class ClientController:
         return None
 
     @staticmethod
-    def buy_asset(id:int, symbol: str, quantity: int) -> bool:
+    def buy_asset(id:int, symbol: str, quantity: float) -> bool:
         client = ClientRepository.get(id)
         asset = AssetRepository.get(symbol)
 
@@ -269,9 +287,10 @@ class ClientController:
             if not asset.decrease_available_quantity(quantity):
                 raise AssetNotEnoughQuantityException("Asset is not available in this quantity.")
             
+            print("balance = ", client.balance)
             AssetRepository.update_available_quantity(symbol, asset.available_quantity)
             ClientRepository.update_balance(id, client.balance)
-            ClientRepository.add_asset(id, symbol)
+            ClientRepository.buy_asset(id, symbol, quantity)
 
             return True
 
@@ -322,11 +341,36 @@ class ClientRepository:
         if row["is_manager"] == 1:
             return Manager(row["client_id"])
         
+        print("row balance = ", row["balance"])
         return User(row["client_id"], row["balance"])
 
-    #TODO
     @staticmethod
     def update_balance(id: int, balance: float):
-        pass
+        db = get_db()
+        cursor = db.cursor()
 
+        query = "UPDATE Clients SET balance = ? WHERE client_id = ?;"
+        cursor.execute(query, (balance, id))
+        db.commit()
         
+    @staticmethod
+    def buy_asset(id: int, asset_symbol: str, quantity: float):
+        db = get_db()
+        cursor = db.cursor()
+
+        query_already_has_asset = "SELECT * FROM ClientAssets WHERE client_id = ? " \
+        "AND asset_symbol = ?;"
+        cursor.execute(query_already_has_asset, (id, asset_symbol))
+        row = cursor.fetchone()
+
+        if row == None:
+            print("Nao achou entrada em ClientAssets")
+            query = "INSERT INTO ClientAssets(client_id, asset_symbol, quantity) " \
+            "VALUES (?, ?, ?);"
+            cursor.execute(query, (id, asset_symbol, quantity))
+            db.commit()
+        else:
+            query = "UPDATE ClientAssets SET quantity = quantity + ? WHERE client_id = ? " \
+            "AND asset_symbol = ?;"
+            cursor.execute(query, (quantity, id, asset_symbol))
+            db.commit()
