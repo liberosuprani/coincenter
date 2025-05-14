@@ -151,19 +151,43 @@ def buy_asset():
             "title" : str(e),
             "status" : 404
         })
-    except Exception as e:
+    except exceptions.AssetNotEnoughQuantityException as e:
         r.data = json.dumps({
             "title" : str(e),
-            "status" : 406
+            "status" : 409
         })
 
     return r
 
 
-# @app.route("/sell", methods = ["POST"])
-# def sell_asset(id, symbol):
-#     response = ClientController.sell_asset(id, symbol)
-#     return response
+@app.route("/sell", methods = ["POST"])
+def sell_asset():
+    r = make_response()
+    r.headers["Content-type"] = "application/api-problem+json"
+
+    # return_not_authenticated_error()
+
+    symbol = request.get_json()["symbol"]
+    quantity = request.get_json()["quantity"]
+
+    try:
+        response = ClientController.sell_asset(10, symbol, quantity)
+        r.data = json.dumps({
+            "title" : "Asset sold succesfully.",
+            "status" : 200
+        })
+    except exceptions.AssetNotFoundException as e:
+        r.data = json.dumps({
+            "title" : str(e),
+            "status" : 404
+        })
+    except exceptions.ClientNotEnoughAsset as e:
+        r.data = json.dumps({
+            "title" : str(e),
+            "status" : 409
+        })
+
+    return r
 
 
 # @app.route("/deposit", methods = ["POST"])

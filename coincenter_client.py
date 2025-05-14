@@ -305,6 +305,16 @@ def main():
     # }
     # r = requests.post("http://localhost:5000/buy", json=a)
 
+    ######################################################################
+    
+    print("-- Teste sell_asset --")
+    a = {
+        "symbol": "BTC",
+        "quantity" : 1 
+    }
+    r = requests.post("http://localhost:5000/sell", json=a)
+    
+    
     print(r.text)
 
 if __name__ == "__main__":

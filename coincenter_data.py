@@ -19,7 +19,8 @@ class NotEnoughBalanceException(Exception):
     pass
 class AssetNotEnoughQuantityException(Exception):
     pass
-
+class ClientNotEnoughAsset(Exception):
+    pass
 
 class Asset:
     def __init__(self, symbol:str, name:str, price:float, available_quantity:float):
@@ -87,13 +88,14 @@ class User(Client):
 
     def buy_asset(self, quantity: float, asset: Asset) -> bool:
         asset_price = asset.price
-        print("self.balance = ", self.balance)
-        print("qantity = ", quantity)
-        print("price = ", asset_price)
         if self.balance < quantity * asset_price:
             return False
         self.balance -= quantity * asset_price
         return True
+    
+    def sell_asset(self, quantity: float, asset: Asset):
+        asset_price = asset.price
+        self.balance += quantity * asset_price
 
     def deposit(self, amount: float) -> bool:
         """
@@ -287,7 +289,6 @@ class ClientController:
             if not asset.decrease_available_quantity(quantity):
                 raise AssetNotEnoughQuantityException("Asset is not available in this quantity.")
             
-            print("balance = ", client.balance)
             AssetRepository.update_available_quantity(symbol, asset.available_quantity)
             ClientRepository.update_balance(id, client.balance)
             ClientRepository.buy_asset(id, symbol, quantity)
@@ -295,8 +296,23 @@ class ClientController:
             return True
 
     @staticmethod
-    def sell_asset(id:int, symbol: str) -> bool:
-        pass
+    def sell_asset(id:int, symbol: str, quantity: float) -> bool:
+        client = ClientRepository.get(id)
+        asset = AssetRepository.get(symbol)
+
+        if asset is None:
+            raise AssetNotFoundException("There is not an asset with this symbol.")
+        
+        if isinstance(client, User):
+            ClientRepository.sell_asset(id, symbol, quantity)
+            
+            asset.increase_available_quantity(quantity)
+            AssetRepository.update_available_quantity(symbol, asset.available_quantity)
+            
+            client.sell_asset(quantity, asset)
+            ClientRepository.update_balance(id, client.balance)
+
+            return True
 
     @staticmethod
     def deposit(id: int, amount: float) -> bool:
@@ -364,7 +380,6 @@ class ClientRepository:
         row = cursor.fetchone()
 
         if row == None:
-            print("Nao achou entrada em ClientAssets")
             query = "INSERT INTO ClientAssets(client_id, asset_symbol, quantity) " \
             "VALUES (?, ?, ?);"
             cursor.execute(query, (id, asset_symbol, quantity))
@@ -374,3 +389,29 @@ class ClientRepository:
             "AND asset_symbol = ?;"
             cursor.execute(query, (quantity, id, asset_symbol))
             db.commit()
+
+    @staticmethod
+    def sell_asset(id: int, asset_symbol: str, quantity: float):
+        db = get_db()
+        cursor = db.cursor()
+
+        query_already_has_asset = "SELECT * FROM ClientAssets WHERE client_id = ? " \
+        "AND asset_symbol = ?;"
+        cursor.execute(query_already_has_asset, (id, asset_symbol))
+        row = cursor.fetchone()
+
+        if row == None:
+            raise ClientNotEnoughAsset("You do not own this asset.")
+        
+        if row["quantity"] - quantity < 0:
+            raise ClientNotEnoughAsset("The quantity you own of this asset is not enough.")
+        if row["quantity"] - quantity == 0:
+            query = "DELETE FROM ClientAssets WHERE client_id = ? " \
+            "AND asset_symbol = ?"
+            cursor.execute(query, (id, asset_symbol))
+        else:
+            query = "UPDATE ClientAssets SET quantity = quantity - ? WHERE client_id = ? " \
+            "AND asset_symbol = ?;"
+            cursor.execute(query, (quantity, id, asset_symbol))
+            
+        db.commit()
