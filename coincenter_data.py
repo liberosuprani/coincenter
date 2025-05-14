@@ -104,7 +104,7 @@ class User(Client):
         if amount <= 0:
             print("Could not deposit: amount should be greater than 0.")
             return False
-        self._balance += amount
+        self.balance += amount
         return True
 
     def withdraw(self, amount: float) -> bool:
@@ -114,12 +114,12 @@ class User(Client):
         if amount <= 0:
             print("Could not withdraw: amount should be greater than 0.")
             return False
-        if amount <= self._balance:
-            self._balance -= amount
-            return True
-        else:
+        if amount > self.balance:
             print("Could not withdraw: unavailable amount.")
             return False
+        
+        self.balance -= amount
+        return True
 
     def __str__(self):
         pass
@@ -316,11 +316,26 @@ class ClientController:
 
     @staticmethod
     def deposit(id: int, amount: float) -> bool:
-        pass
+        client = ClientRepository.get(id)
+        
+        if isinstance(client, User):
+            if not client.deposit(amount):
+                raise Exception("Invalid amount to deposit. Value should be greater than 0.")
+            
+            ClientRepository.update_balance(id, client.balance)
+            return True
 
     @staticmethod
     def withdraw(id: int, amount: float) -> bool:
-        pass
+        client = ClientRepository.get(id)
+
+        if isinstance(client, User):
+            if not client.withdraw(amount):
+                #TODO specify somehow the which should be the type of exception (was amount < 0 or amount > balance)
+                raise Exception("Amount should be greater than 0 and you should have enough balance to withdraw.")
+            
+            ClientRepository.update_balance(id, client.balance)
+            return True
 
     @staticmethod
     def transactions() -> str:

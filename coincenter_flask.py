@@ -190,16 +190,52 @@ def sell_asset():
     return r
 
 
-# @app.route("/deposit", methods = ["POST"])
-# def deposit(id, amount):
-#     response = ClientController.deposit(id, amount)
-#     return response
+@app.route("/deposit", methods = ["POST"])
+def deposit():
+    r = make_response()
+    r.headers["Content-type"] = "application/api-problem+json"
+
+    # return_not_authenticated_error()
+
+    amount = request.get_json()["amount"]
+
+    try:
+        response = ClientController.deposit(10, amount)
+        r.data = json.dumps({
+            "title" : "Deposit made successfully.",
+            "status" : 200
+        })
+    except Exception as e:
+        r.data = json.dumps({
+            "title" : str(e),
+            "status" : 409
+        })
+
+    return r
 
 
-# @app.route("/withdraw", methods = ["POST"])
-# def withdraw(id, amount):
-#     response = ClientController.withdraw(id, amount)
-#     return response
+@app.route("/withdraw", methods = ["POST"])
+def withdraw():
+    r = make_response()
+    r.headers["Content-type"] = "application/api-problem+json"
+
+    # return_not_authenticated_error()
+
+    amount = request.get_json()["amount"]
+
+    try:
+        response = ClientController.withdraw(10, amount)
+        r.data = json.dumps({
+            "title" : "Withdraw made successfully.",
+            "status" : 200
+        })
+    except Exception as e:
+        r.data = json.dumps({
+            "title" : str(e),
+            "status" : 409
+        })
+
+    return r
 
 
 # @app.route("/transactions", methods = ["GET"])

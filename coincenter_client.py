@@ -307,13 +307,30 @@ def main():
 
     ######################################################################
     
-    print("-- Teste sell_asset --")
-    a = {
-        "symbol": "BTC",
-        "quantity" : 1 
-    }
-    r = requests.post("http://localhost:5000/sell", json=a)
+    # print("-- Teste sell_asset --")
+    # a = {
+    #     "symbol": "BTC",
+    #     "quantity" : 1 
+    # }
+    # r = requests.post("http://localhost:5000/sell", json=a)
     
+    ######################################################################
+
+    # print("-- Teste deposit --")
+    # deposit = {
+    #     "amount" : 100
+    # }
+    # r = requests.post("http://localhost:5000/deposit", json = deposit)
+    
+    ######################################################################
+
+    print("-- Teste withdraw --")
+    withdraw = {
+        "amount" : 99
+    }
+    r = requests.post("http://localhost:5000/withdraw", json = withdraw)
+    
+    ######################################################################
     
     print(r.text)
 
