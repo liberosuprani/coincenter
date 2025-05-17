@@ -171,7 +171,7 @@ def sell_asset():
     r = make_response()
     r.headers["Content-type"] = "application/api-problem+json"
 
-    # return_not_authenticated_error()
+    return_not_authenticated_error()
 
     symbol = request.get_json()["symbol"]
     quantity = request.get_json()["quantity"]
@@ -204,7 +204,7 @@ def deposit():
     r = make_response()
     r.headers["Content-type"] = "application/api-problem+json"
 
-    # return_not_authenticated_error()
+    return_not_authenticated_error()
 
     amount = request.get_json()["amount"]
 
@@ -212,7 +212,7 @@ def deposit():
         response = ClientController.deposit(10, amount)
         r.status_code = 200
         r.data = json.dumps({
-            "title" : "Deposit made successfully.",
+            "title" : "Amount deposited successfully.",
             "status" : 200
         })
     except Exception as e:
@@ -230,7 +230,7 @@ def withdraw():
     r = make_response()
     r.headers["Content-type"] = "application/api-problem+json"
 
-    # return_not_authenticated_error()
+    return_not_authenticated_error()
 
     amount = request.get_json()["amount"]
 
@@ -238,7 +238,7 @@ def withdraw():
         response = ClientController.withdraw(10, amount)
         r.status_code = 200
         r.data = json.dumps({
-            "title" : "Withdraw made successfully.",
+            "title" : "Amount withdrawn successfully.",
             "status" : 200
         })
     except Exception as e:
