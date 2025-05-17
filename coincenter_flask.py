@@ -111,6 +111,7 @@ def login():
         "status" : 200
     })
 
+    print("session: ", session['client_id'])
     return r
 
 

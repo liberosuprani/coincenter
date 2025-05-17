@@ -287,7 +287,8 @@ class ClientController:
                 client = User(id)
             ClientRepository.add(client)
             
-        session["client_id"] = id
+        session['client_id'] = id
+        session.modified = True
     
     @staticmethod
     def get_user_balance_assets(id: int) -> dict:
