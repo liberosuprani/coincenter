@@ -115,15 +115,12 @@ def login():
     return r
 
 
-@app.route("/user/<int:id>", methods = ["GET"])
-def user(id):
+@app.route("/user", methods = ["GET"])
+def user():
     r = make_response()
     r.headers["Content-type"] = "application/api-problem+json"
 
-    if id != 666:
-        return_not_authenticated_error()
-    else:
-        session["client_id"] = 666
+    return_not_authenticated_error()
 
     response = ClientController.get_user_balance_assets(session["client_id"])
     print(response)
@@ -144,7 +141,7 @@ def buy_asset():
     quantity = request.get_json()["quantity"]
 
     try:
-        response = ClientController.buy_asset(10, symbol, quantity)
+        response = ClientController.buy_asset(session['client_id'], symbol, quantity)
         r.status_code = 200
         r.data = json.dumps({
             "title" : "Asset bought succesfully.",
@@ -177,7 +174,7 @@ def sell_asset():
     quantity = request.get_json()["quantity"]
 
     try:
-        response = ClientController.sell_asset(10, symbol, quantity)
+        response = ClientController.sell_asset(session['client_id'], symbol, quantity)
         r.status_code = 200
         r.data = json.dumps({
             "title" : "Asset sold succesfully.",
@@ -209,7 +206,7 @@ def deposit():
     amount = request.get_json()["amount"]
 
     try:
-        response = ClientController.deposit(10, amount)
+        response = ClientController.deposit(session['client_id'], amount)
         r.status_code = 200
         r.data = json.dumps({
             "title" : "Amount deposited successfully.",
@@ -235,7 +232,7 @@ def withdraw():
     amount = request.get_json()["amount"]
 
     try:
-        response = ClientController.withdraw(10, amount)
+        response = ClientController.withdraw(session['client_id'], amount)
         r.status_code = 200
         r.data = json.dumps({
             "title" : "Amount withdrawn successfully.",
@@ -251,6 +248,7 @@ def withdraw():
     return r
 
 
+#TODO
 # @app.route("/transactions", methods = ["GET"])
 # def transactions(id):
 #     response = ClientController.transactions()

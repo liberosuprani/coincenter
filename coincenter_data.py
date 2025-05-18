@@ -18,7 +18,7 @@ SELL = 6
 DEPOSIT = 7
 WITHDRAW = 8
 
-EXIT = 9
+EXIT = 0
 
 MANAGER_SUPPORTED_COMMANDS = {
     ADD_ASSET: "ADD_ASSET",
@@ -299,7 +299,14 @@ class ClientController:
             user_assets = AssetRepository.get_by_user_id(id)
             return {
                 "balance" : balance,
-                "assets" : user_assets if user_assets is not None else "No assets"
+                "assets" : 
+                    [{
+                        "symbol" : a.symbol,
+                        "name" : a.name,
+                        "price" : a.price,
+                        "available_quantity" : a.available_quantity
+                    } for a in user_assets ] 
+                    if user_assets is not None else "No assets"
             }
 
         return None
@@ -366,6 +373,7 @@ class ClientController:
             ClientRepository.update_balance(id, client.balance)
             return True
 
+    #TODO
     @staticmethod
     def transactions() -> str:
         pass
