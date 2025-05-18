@@ -86,6 +86,7 @@ def manager_menu(client_id):
         print(f"{consts.ADD_ASSET}) {consts.MANAGER_SUPPORTED_COMMANDS[consts.ADD_ASSET]}\n"
             f"{consts.GET_ALL_ASSETS}) {consts.MANAGER_SUPPORTED_COMMANDS[consts.GET_ALL_ASSETS]}\n"
             f"{consts.GET_ASSET}) {consts.MANAGER_SUPPORTED_COMMANDS[consts.GET_ASSET]}\n"
+            f"{consts.GET_TRANSACTIONS}) {consts.MANAGER_SUPPORTED_COMMANDS[consts.GET_TRANSACTIONS]}\n"
             f"{consts.EXIT}) {consts.MANAGER_SUPPORTED_COMMANDS[consts.EXIT]}")
 
         exit_loop = False
@@ -102,16 +103,15 @@ def manager_menu(client_id):
                 command.append(float(input("Available quantity > ")))    # asset's available amount
                 send_request = manager_add_asset
 
-            # if command[0] == consts.MGR_REMOVE_ASSET:
-            #     command.append(input("Asset symbol > ")) # asset's symbol
-            #     action = manager_remove_asset
-
             if command[0] == consts.GET_ALL_ASSETS:
                 send_request = get_all_assets
 
             if command[0] == consts.GET_ASSET:
                 command.append(input("Asset symbol > "))
                 send_request = get_asset
+
+            if command[0] == consts.GET_TRANSACTIONS:
+                send_request = manager_get_transactions
 
             if command[0] == consts.EXIT:
                 exit_program = True
@@ -160,7 +160,7 @@ def user_menu(client_id):
                 
             if command[0] == consts.DEPOSIT or command[0] == consts.WITHDRAW:
                 command.append(float(input("Amount > ")))    # amount to deposit / withdraw
-                send_request = user_deposit if command[0] == consts.BUY else user_withdraw 
+                send_request = user_deposit if command[0] == consts.DEPOSIT else user_withdraw 
 
             if command[0] == consts.EXIT:
                 exit_program = True
@@ -176,7 +176,6 @@ def user_menu(client_id):
 
 def get_user_assets(command):
     return session.get(f"{HOST}/user")
-
 
 def user_buy_asset(command):
     symbol = command[1]
@@ -194,7 +193,7 @@ def user_sell_asset(command):
         "symbol" : symbol,
         "quantity" : quantity
     }
-    return session.post(f"{HOST}/buy", json=sell_request)
+    return session.post(f"{HOST}/sell", json=sell_request)
 
 def user_deposit(command):
     amount = command[1]
@@ -222,6 +221,9 @@ def manager_add_asset(command: list):
         "available_quantity" : available_quantity
     }
     return session.post(f"{HOST}asset", json=asset)
+
+def manager_get_transactions(command):
+    return session.get(f"{HOST}/transactions")
 
 def get_all_assets(command):
     return session.get(f"{HOST}/assetset")

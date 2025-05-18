@@ -28,7 +28,7 @@ CREATE TABLE ClientAssets (
 );
 
 CREATE TABLE Transactions (
-    id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     client_id INTEGER NOT NULL,
     asset_symbol VARCHAR(5) NOT NULL,
     [type] VARCHAR NOT NULL,

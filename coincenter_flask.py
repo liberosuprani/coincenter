@@ -248,11 +248,29 @@ def withdraw():
     return r
 
 
-#TODO
-# @app.route("/transactions", methods = ["GET"])
-# def transactions(id):
-#     response = ClientController.transactions()
-#     return response
+@app.route("/transactions", methods = ["GET"])
+def transactions():
+    r = make_response()
+    r.headers["Content-type"] = "application/api-problem+json"
+
+    try:
+        response = ClientController.get_transactions(session["client_id"])
+        r.status_code = 200
+        r.data = json.dumps(response)
+    except exceptions.NotManagerException as e:
+        r.status_code = 403
+        r.data = json.dumps({
+            "title" : str(e),
+            "status" : 403
+        })
+    except Exception as e:
+        r.status_code = 404
+        r.data = json.dumps({
+            "title" : str(e),
+            "status" : 404
+        })
+
+    return r
     
 
 if __name__ == "__main__":

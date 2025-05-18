@@ -6,6 +6,7 @@ Número de aluno: 62220
 from abc import ABC
 from setup_db import get_db
 from flask import session
+from datetime import datetime
 
 # constants with the number of each command
 ADD_ASSET = 1
@@ -17,6 +18,7 @@ BUY = 5
 SELL = 6
 DEPOSIT = 7
 WITHDRAW = 8
+GET_TRANSACTIONS = 9
 
 EXIT = 0
 
@@ -24,6 +26,7 @@ MANAGER_SUPPORTED_COMMANDS = {
     ADD_ASSET: "ADD_ASSET",
     GET_ALL_ASSETS: "GET_ALL_ASSETS",
     GET_ASSET: "GET_ASSET",
+    GET_TRANSACTIONS: "GET_TRANSACTIONS",
     EXIT: "EXIT",
 }
 
@@ -48,6 +51,8 @@ class NotEnoughBalanceException(Exception):
 class AssetNotEnoughQuantityException(Exception):
     pass
 class ClientNotEnoughAsset(Exception):
+    pass
+class NotManagerException(Exception):
     pass
 
 class Asset:
@@ -109,10 +114,7 @@ class User(Client):
         super().__init__(id)
         if balance < 0:
             raise Exception("Balance cannot be lower than zero.")
-        if balance == 0:
-            self.balance = 1000000
-        else:
-            self.balance = balance
+        self.balance = balance
 
     def buy_asset(self, quantity: float, asset: Asset) -> bool:
         asset_price = asset.price
@@ -148,9 +150,6 @@ class User(Client):
         
         self.balance -= amount
         return True
-
-    def __str__(self):
-        pass
 
            
 class Manager(Client):
@@ -329,6 +328,10 @@ class ClientController:
             ClientRepository.update_balance(id, client.balance)
             ClientRepository.buy_asset(id, symbol, quantity)
 
+            current_datetime = datetime.now()
+            current_datetime_formatted = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            ClientRepository.add_transaction(id, symbol, "BUY", quantity, quantity*asset.price, current_datetime_formatted)
+
             return True
 
     @staticmethod
@@ -347,6 +350,10 @@ class ClientController:
             
             client.sell_asset(quantity, asset)
             ClientRepository.update_balance(id, client.balance)
+
+            current_datetime = datetime.now()
+            current_datetime_formatted = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            ClientRepository.add_transaction(id, symbol, "SELL", quantity, quantity*asset.price, current_datetime_formatted)
 
             return True
 
@@ -373,10 +380,32 @@ class ClientController:
             ClientRepository.update_balance(id, client.balance)
             return True
 
-    #TODO
     @staticmethod
-    def transactions() -> str:
-        pass
+    def get_transactions(requester_id: int) -> list:
+
+        requester = ClientRepository.get(requester_id)
+        if not isinstance(requester, Manager):
+            raise NotManagerException("Resource only accessible by managers.")
+
+        transactions_list = ClientRepository.get_transactions()
+
+        if transactions_list is None:
+            raise Exception("There are no transactions.")
+        return [
+            {
+                "id" : t["id"],
+                "client id" : t["client_id"],
+                "asset symbol" : t["asset_symbol"],
+                "type" : t["type"],
+                "quantity" : t["quantity"],
+                "price" : t["price"],
+                "time" : t["time"]
+            } 
+            for t in transactions_list
+        ]
+
+
+        
 
 
 class ClientRepository:
@@ -467,3 +496,28 @@ class ClientRepository:
             cursor.execute(query, (quantity, id, asset_symbol))
             
         db.commit()
+
+    @staticmethod
+    def add_transaction(client_id: int, asset_symbol: str, transaction_type: str, quantity: float, price: float, current_date: str):
+        db = get_db()
+        cursor = db.cursor()
+
+        query = "INSERT INTO Transactions(id, client_id, asset_symbol, type, quantity, price, time)" \
+        " VALUES (NULL, ?, ?, ?, ?, ?, ?);"
+
+        cursor.execute(query, (client_id, asset_symbol, transaction_type, quantity, price, current_date))
+        db.commit()
+
+    @staticmethod
+    def get_transactions() -> list:
+        db = get_db()
+        cursor = db.cursor()
+
+        query = "SELECT * FROM Transactions;"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+
+        if len(rows) == 0:
+            return None
+        
+        return rows
