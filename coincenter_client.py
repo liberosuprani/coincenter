@@ -5,10 +5,10 @@ Número de aluno: 62220
 
 # import sys
 import coincenter_data as consts
-import requests, sys, json
+import requests, json
 
 session = requests.Session()
-HOST = "http://localhost:5000/"
+HOST = "https://localhost:5000/"
 
 def validate_manager_command(command_and_args: list) -> bool:
     """
@@ -75,6 +75,8 @@ def validate_user_command(command_and_args: list) -> bool:
     if command == consts.EXIT:
         return len(command_and_args) == 1
 
+
+########################### MENU
 
 def manager_menu(client_id):
     """
@@ -174,6 +176,8 @@ def user_menu(client_id):
                 print(r.text)
 
 
+########################### SEND FUNCTIONS
+
 def get_user_assets(command):
     return session.get(f"{HOST}/user")
 
@@ -184,7 +188,7 @@ def user_buy_asset(command):
         "symbol" : symbol,
         "quantity" : quantity
     }
-    return session.post(f"{HOST}/buy", json=buy_request)
+    return session.post(f"{HOST}/buy", json=buy_request, verify="root.pem", cert=("cli.crt", "cli.key"))
 
 def user_sell_asset(command):
     symbol = command[1]
@@ -193,21 +197,21 @@ def user_sell_asset(command):
         "symbol" : symbol,
         "quantity" : quantity
     }
-    return session.post(f"{HOST}/sell", json=sell_request)
+    return session.post(f"{HOST}/sell", json=sell_request, verify="root.pem", cert=("cli.crt", "cli.key"))
 
 def user_deposit(command):
     amount = command[1]
     deposit_request = {
         "amount" : amount
     }
-    return session.post(f"{HOST}/deposit", json=deposit_request)
+    return session.post(f"{HOST}/deposit", json=deposit_request, verify="root.pem", cert=("cli.crt", "cli.key"))
 
 def user_withdraw(command):
     amount = command[1]
     withdraw_request = {
         "amount" : amount
     }
-    return session.post(f"{HOST}/withdraw", json=withdraw_request)
+    return session.post(f"{HOST}/withdraw", json=withdraw_request, verify="root.pem", cert=("cli.crt", "cli.key"))
 
 def manager_add_asset(command: list):
     name = command[1]
@@ -220,27 +224,29 @@ def manager_add_asset(command: list):
         "price" : price,
         "available_quantity" : available_quantity
     }
-    return session.post(f"{HOST}asset", json=asset)
+    return session.post(f"{HOST}asset", json=asset, verify="root.pem", cert=("cli.crt", "cli.key"))
 
 def manager_get_transactions(command):
-    return session.get(f"{HOST}/transactions")
+    return session.get(f"{HOST}/transactions", verify="root.pem", cert=("cli.crt", "cli.key"))
 
 def get_all_assets(command):
-    return session.get(f"{HOST}/assetset")
+    return session.get(f"{HOST}/assetset", verify="root.pem", cert=("cli.crt", "cli.key"))
 
 def get_asset(command: list):
     symbol = command[1]
-    return session.get(f"{HOST}/asset/{symbol}")
+    return session.get(f"{HOST}/asset/{symbol}", verify="root.pem", cert=("cli.crt", "cli.key"))
+
+###########################
 
 def login_menu():
     client_id = int(input("----------\nBem-vindo ao coincenter.\nIndique seu id: "))
-    response = session.post("http://localhost:5000/login", json = {"client_id":client_id})
+    response = session.post("https://localhost:5000/login", json = {"client_id":client_id}, verify="root.pem", cert=("cli.crt", "cli.key"))
     response_json = json.loads(response.text)
 
     while response.status_code != 200:
         print(response_json["title"])
         client_id = int(input("Bem-vindo ao coincenter.\nIndique seu id: "))
-        response = session.post("http://localhost:5000/login", json = {"client_id":client_id})
+        response = session.post("https://localhost:5000/login", json = {"client_id":client_id}, verify="root.pem", cert=("cli.crt", "cli.key"))
 
     if client_id == 0:
         manager_menu(client_id)

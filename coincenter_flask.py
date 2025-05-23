@@ -4,18 +4,20 @@ Número de aluno: 62220
 """
 
 from flask import Flask, request, make_response, session
-import json
+import json, ssl
 from coincenter_data import *
-import coincenter_data as exceptions
+
+#TODO incluir campo detail nos problem json
 
 app = Flask(__name__)
 app.secret_key = "chave secreta"
 
 def return_not_authenticated_error():
     r = make_response()
-    r.headers["Content-type"] = "application/api-problem+json"
+    r.headers["Content-type"] = "application/json"
 
     if "client_id" not in session:
+        r.headers["Content-type"] = "application/api-problem+json"
         r.status_code = 401
         r.data = json.dumps({
             "title" : "Not logged in.",
@@ -30,14 +32,15 @@ def return_not_authenticated_error():
 @app.route("/asset/<string:symbol>", methods = ["GET"])
 def asset(symbol=None):
     r = make_response()
-    r.headers["Content-type"] = "application/api-problem+json"
+    r.headers["Content-type"] = "application/json"
 
     if request.method == "GET":
         try:
             response = AssetController.get_asset(symbol)
             r.status_code = 200
             r.data = json.dumps(response)
-        except exceptions.AssetNotFoundException as e:
+        except NotFoundException as e:
+            r.headers["Content-type"] = "application/api-problem+json"
             r.status_code = 404
             r.data = json.dumps({
                 "title" : str(e),
@@ -62,16 +65,18 @@ def asset(symbol=None):
                 "status" : 201
             })
         except KeyError:
+            r.headers["Content-type"] = "application/api-problem+json"
             r.status_code = 400
             r.data = json.dumps({
                 "title" : "There were missing arguments for the creation of the asset. You must provide a symbol, a name, a price and the available quantity.",
                 "status" : 400
             })
-        except exceptions.AssetAlreadyExistsException as e:
-            r.status_code = 409
+        except Exception as e:
+            r.headers["Content-type"] = "application/api-problem+json"
+            r.status_code = e.code
             r.data = json.dumps({
                 "title" : str(e),
-                "status" : 409,
+                "status" : e.code,
             })
 
     return r
@@ -80,17 +85,18 @@ def asset(symbol=None):
 @app.route("/assetset", methods = ["GET"])
 def asset_set():
     r = make_response()
-    r.headers["Content-type"] = "application/api-problem+json"
+    r.headers["Content-type"] = "application/json"
 
     try:
         response = AssetController.get_all_assets()
         r.status_code = 200
         r.data = json.dumps(response)
-    except exceptions.AssetNotFoundException as e:
-        r.status_code = 404
+    except NotFoundException as e:
+        r.headers["Content-type"] = "application/api-problem+json"
+        r.status_code = e.code
         r.data = json.dumps({
             "title" : str(e),
-            "status" : 404
+            "status" : e.code
         })
     return r
 
@@ -98,7 +104,7 @@ def asset_set():
 @app.route("/login", methods = ["POST"])
 def login():
     r = make_response()
-    r.headers["Content-type"] = "application/api-problem+json"
+    r.headers["Content-type"] = "application/json"
 
     req = request.get_json()
     client_id = req["client_id"]
@@ -118,7 +124,7 @@ def login():
 @app.route("/user", methods = ["GET"])
 def user():
     r = make_response()
-    r.headers["Content-type"] = "application/api-problem+json"
+    r.headers["Content-type"] = "application/json"
 
     return_not_authenticated_error()
 
@@ -133,7 +139,7 @@ def user():
 @app.route("/buy", methods = ["POST"])
 def buy_asset():
     r = make_response()
-    r.headers["Content-type"] = "application/api-problem+json"
+    r.headers["Content-type"] = "application/json"
 
     return_not_authenticated_error()
 
@@ -147,17 +153,19 @@ def buy_asset():
             "title" : "Asset bought succesfully.",
             "status" : 200
         })
-    except exceptions.AssetNotFoundException as e:
-        r.status_code = 404
+    except KeyError:
+        r.headers["Content-type"] = "application/api-problem+json"
+        r.status_code = 400
         r.data = json.dumps({
-            "title" : str(e),
-            "status" : 404
+            "title" : "There were missing arguments. You must provide a symbol and a quantity.",
+            "status" : 400
         })
-    except exceptions.AssetNotEnoughQuantityException as e:
-        r.status_code = 409
+    except Exception as e:
+        r.headers["Content-type"] = "application/api-problem+json"
+        r.status_code = e.code
         r.data = json.dumps({
             "title" : str(e),
-            "status" : 409
+            "status" : e.code
         })
 
     return r
@@ -166,7 +174,7 @@ def buy_asset():
 @app.route("/sell", methods = ["POST"])
 def sell_asset():
     r = make_response()
-    r.headers["Content-type"] = "application/api-problem+json"
+    r.headers["Content-type"] = "application/json"
 
     return_not_authenticated_error()
 
@@ -180,17 +188,19 @@ def sell_asset():
             "title" : "Asset sold succesfully.",
             "status" : 200
         })
-    except exceptions.AssetNotFoundException as e:
-        r.status_code = 404
+    except KeyError:
+        r.headers["Content-type"] = "application/api-problem+json"
+        r.status_code = 400
         r.data = json.dumps({
-            "title" : str(e),
-            "status" : 404
+            "title" : "There were missing arguments for the creation of the asset. You must provide a symbol, a name, a price and the available quantity.",
+            "status" : 400
         })
-    except exceptions.ClientNotEnoughAsset as e:
-        r.status_code = 409
+    except Exception as e:
+        r.headers["Content-type"] = "application/api-problem+json"
+        r.status_code = e.code
         r.data = json.dumps({
             "title" : str(e),
-            "status" : 409
+            "status" : e.code
         })
 
     return r
@@ -199,7 +209,7 @@ def sell_asset():
 @app.route("/deposit", methods = ["POST"])
 def deposit():
     r = make_response()
-    r.headers["Content-type"] = "application/api-problem+json"
+    r.headers["Content-type"] = "application/json"
 
     return_not_authenticated_error()
 
@@ -213,10 +223,11 @@ def deposit():
             "status" : 200
         })
     except Exception as e:
-        r.status_code = 409
+        r.headers["Content-type"] = "application/api-problem+json"
+        r.status_code = e.code
         r.data = json.dumps({
             "title" : str(e),
-            "status" : 409
+            "status" : e.code
         })
 
     return r
@@ -225,7 +236,7 @@ def deposit():
 @app.route("/withdraw", methods = ["POST"])
 def withdraw():
     r = make_response()
-    r.headers["Content-type"] = "application/api-problem+json"
+    r.headers["Content-type"] = "application/json"
 
     return_not_authenticated_error()
 
@@ -239,10 +250,11 @@ def withdraw():
             "status" : 200
         })
     except Exception as e:
-        r.status_code = 409
+        r.headers["Content-type"] = "application/api-problem+json"
+        r.status_code = e.code
         r.data = json.dumps({
             "title" : str(e),
-            "status" : 409
+            "status" : e.code
         })
 
     return r
@@ -251,28 +263,26 @@ def withdraw():
 @app.route("/transactions", methods = ["GET"])
 def transactions():
     r = make_response()
-    r.headers["Content-type"] = "application/api-problem+json"
+    r.headers["Content-type"] = "application/json"
 
     try:
         response = ClientController.get_transactions(session["client_id"])
         r.status_code = 200
         r.data = json.dumps(response)
-    except exceptions.NotManagerException as e:
-        r.status_code = 403
-        r.data = json.dumps({
-            "title" : str(e),
-            "status" : 403
-        })
     except Exception as e:
-        r.status_code = 404
+        r.headers["Content-type"] = "application/api-problem+json"
+        r.status_code = e.code
         r.data = json.dumps({
             "title" : str(e),
-            "status" : 404
+            "status" : e.code
         })
 
     return r
     
 
 if __name__ == "__main__":
-    app.run()
-
+    context = ssl.SSLContext(protocol=ssl.PROTOCOL_TLS_SERVER)
+    context.verify_mode = ssl.CERT_REQUIRED
+    context.load_verify_locations(cafile="root.pem")
+    context.load_cert_chain(certfile="serv.crt", keyfile="serv.key")
+    app.run("localhost" , ssl_context=context, debug=True)

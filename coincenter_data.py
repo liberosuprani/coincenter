@@ -41,19 +41,35 @@ USER_SUPPORTED_COMMANDS = {
 }
 
 class AssetAlreadyExistsException(Exception):
-    pass
-class InvalidAssetSymbol(Exception):
-    pass
-class AssetNotFoundException(Exception):
-    pass
+    def __init__(self, message):
+        super().__init__(message)
+        self.code = 409
+
+class NotFoundException(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.code = 404
+        
 class NotEnoughBalanceException(Exception):
-    pass
+    def __init__(self, message):
+        super().__init__(message)
+        self.code = 406
+
 class AssetNotEnoughQuantityException(Exception):
-    pass
+    def __init__(self, message):
+        super().__init__(message)
+        self.code = 409
+
 class ClientNotEnoughAsset(Exception):
-    pass
+    def __init__(self, message):
+        super().__init__(message)
+        self.code = 409
+
 class NotManagerException(Exception):
-    pass
+    def __init__(self, message):
+        super().__init__(message)
+        self.code = 403
+
 
 class Asset:
     def __init__(self, symbol:str, name:str, price:float, available_quantity:float):
@@ -179,7 +195,7 @@ class AssetController:
     def get_asset(symbol: str) -> dict:
         asset = AssetRepository.get(symbol)
         if asset is None:
-            raise AssetNotFoundException("There is not an asset with this symbol.")
+            raise NotFoundException("There is not an asset with this symbol.")
         return {
             "symbol" : asset.symbol,
             "name" : asset.name,
@@ -192,7 +208,7 @@ class AssetController:
         asset_list = AssetRepository.get_all()
 
         if asset_list is None:
-            raise AssetNotFoundException("There are no assets registered in the system.")
+            raise NotFoundException("There are no assets registered in the system.")
         return [
             {
                 "symbol" : a.symbol,
@@ -316,7 +332,7 @@ class ClientController:
         asset = AssetRepository.get(symbol)
 
         if asset is None:
-            raise AssetNotFoundException("There is not an asset with this symbol.")
+            raise NotFoundException("There is not an asset with this symbol.")
         
         if isinstance(client, User):
             if not client.buy_asset(quantity, asset):
@@ -340,7 +356,7 @@ class ClientController:
         asset = AssetRepository.get(symbol)
 
         if asset is None:
-            raise AssetNotFoundException("There is not an asset with this symbol.")
+            raise NotFoundException("There is not an asset with this symbol.")
         
         if isinstance(client, User):
             ClientRepository.sell_asset(id, symbol, quantity)
@@ -390,7 +406,7 @@ class ClientController:
         transactions_list = ClientRepository.get_transactions()
 
         if transactions_list is None:
-            raise Exception("There are no transactions.")
+            raise NotFoundException("There are no transactions.")
         return [
             {
                 "id" : t["id"],
