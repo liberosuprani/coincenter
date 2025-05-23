@@ -3,9 +3,12 @@ Aplicações Distribuídas - Projeto 2 - coincenter_server.py
 Número de aluno: 62220
 """
 
+#TODO get_assets_balance do user não deveria mostrar a available_quantity de cada asset que ele tem
+
 from flask import Flask, request, make_response, session
 import json, ssl
 from coincenter_data import *
+
 
 #TODO incluir campo detail nos problem json
 
@@ -21,6 +24,7 @@ def return_not_authenticated_error():
         r.status_code = 401
         r.data = json.dumps({
             "title" : "Not logged in.",
+            "detail" : "You must be logged in for this operation to work.",
             "status" : 401
         })
         return r
@@ -43,8 +47,9 @@ def asset(symbol=None):
             r.headers["Content-type"] = "application/api-problem+json"
             r.status_code = 404
             r.data = json.dumps({
-                "title" : str(e),
-                "status" : 404
+                "title" : e.title,
+                "status" : 404,
+                "detail" : str(e)
             })
 
     if request.method == "POST":
@@ -68,15 +73,17 @@ def asset(symbol=None):
             r.headers["Content-type"] = "application/api-problem+json"
             r.status_code = 400
             r.data = json.dumps({
-                "title" : "There were missing arguments for the creation of the asset. You must provide a symbol, a name, a price and the available quantity.",
+                "title" : "There were missing arguments for the creation of the asset.",
+                "detail" : "You must provide a symbol, a name, a price and the available quantity.",
                 "status" : 400
             })
         except Exception as e:
             r.headers["Content-type"] = "application/api-problem+json"
             r.status_code = e.code
             r.data = json.dumps({
-                "title" : str(e),
+                "title" : e.title,
                 "status" : e.code,
+                "detail" : e.detail
             })
 
     return r
@@ -95,8 +102,9 @@ def asset_set():
         r.headers["Content-type"] = "application/api-problem+json"
         r.status_code = e.code
         r.data = json.dumps({
-            "title" : str(e),
-            "status" : e.code
+            "title" : e.title,
+            "status" : e.code,
+            "detail" : e.detail
         })
     return r
 
@@ -157,14 +165,16 @@ def buy_asset():
         r.headers["Content-type"] = "application/api-problem+json"
         r.status_code = 400
         r.data = json.dumps({
-            "title" : "There were missing arguments. You must provide a symbol and a quantity.",
+            "title" : "There were missing arguments.",
+            "detail" : "You must provide a symbol and a quantity.",
             "status" : 400
         })
     except Exception as e:
         r.headers["Content-type"] = "application/api-problem+json"
         r.status_code = e.code
         r.data = json.dumps({
-            "title" : str(e),
+            "title" : e.title,
+            "detail" : e.detail,
             "status" : e.code
         })
 
@@ -192,14 +202,16 @@ def sell_asset():
         r.headers["Content-type"] = "application/api-problem+json"
         r.status_code = 400
         r.data = json.dumps({
-            "title" : "There were missing arguments for the creation of the asset. You must provide a symbol, a name, a price and the available quantity.",
+            "title" : "There were missing arguments for the creation of the asset.",
+            "detail" : "You must provide a symbol, a name, a price and the available quantity.",
             "status" : 400
         })
     except Exception as e:
         r.headers["Content-type"] = "application/api-problem+json"
         r.status_code = e.code
         r.data = json.dumps({
-            "title" : str(e),
+            "title" : e.title,
+            "detail" : e.detail,
             "status" : e.code
         })
 
@@ -226,7 +238,8 @@ def deposit():
         r.headers["Content-type"] = "application/api-problem+json"
         r.status_code = e.code
         r.data = json.dumps({
-            "title" : str(e),
+            "title" : e.title,
+            "detail" : e.detail,
             "status" : e.code
         })
 
@@ -253,7 +266,8 @@ def withdraw():
         r.headers["Content-type"] = "application/api-problem+json"
         r.status_code = e.code
         r.data = json.dumps({
-            "title" : str(e),
+            "title" : e.title,
+            "detail" : e.detail,
             "status" : e.code
         })
 
@@ -273,7 +287,8 @@ def transactions():
         r.headers["Content-type"] = "application/api-problem+json"
         r.status_code = e.code
         r.data = json.dumps({
-            "title" : str(e),
+            "title" : e.title,
+            "detail" : e.detail,
             "status" : e.code
         })
 

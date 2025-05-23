@@ -41,33 +41,52 @@ USER_SUPPORTED_COMMANDS = {
 }
 
 class AssetAlreadyExistsException(Exception):
-    def __init__(self, message):
+    def __init__(self, message, detail):
         super().__init__(message)
+        self.title = message
+        self.detail = detail
+        self.code = 409
+
+class InvalidAmountException(Exception):
+    def __init__(self, message, detail):
+        super().__init__(message)
+        self.title = message
+        self.detail = detail
         self.code = 409
 
 class NotFoundException(Exception):
-    def __init__(self, message):
+    def __init__(self, message, detail):
         super().__init__(message)
+        self.title = message
+        self.detail = detail
         self.code = 404
         
 class NotEnoughBalanceException(Exception):
-    def __init__(self, message):
+    def __init__(self, message, detail):
         super().__init__(message)
+        self.title = message
+        self.detail = detail
         self.code = 406
 
 class AssetNotEnoughQuantityException(Exception):
-    def __init__(self, message):
+    def __init__(self, message, detail):
         super().__init__(message)
+        self.title = message
+        self.detail = detail
         self.code = 409
 
 class ClientNotEnoughAsset(Exception):
-    def __init__(self, message):
+    def __init__(self, message, detail):
         super().__init__(message)
+        self.title = message
+        self.detail = detail
         self.code = 409
 
 class NotManagerException(Exception):
-    def __init__(self, message):
+    def __init__(self, message, detail):
         super().__init__(message)
+        self.title = message
+        self.detail = detail
         self.code = 403
 
 
@@ -186,7 +205,7 @@ class AssetController:
         asset = AssetRepository.get(symbol)
 
         if asset is not None:
-            raise AssetAlreadyExistsException("There is already an asset with this symbol")
+            raise AssetAlreadyExistsException("Asset already exists.", "There is already an asset with this symbol.")
 
         asset = Asset(symbol, name, price, available_quantity)
         AssetRepository.add(asset)
@@ -195,7 +214,7 @@ class AssetController:
     def get_asset(symbol: str) -> dict:
         asset = AssetRepository.get(symbol)
         if asset is None:
-            raise NotFoundException("There is not an asset with this symbol.")
+            raise NotFoundException("Asset not found.", "There is not an asset with this symbol.")
         return {
             "symbol" : asset.symbol,
             "name" : asset.name,
@@ -208,7 +227,7 @@ class AssetController:
         asset_list = AssetRepository.get_all()
 
         if asset_list is None:
-            raise NotFoundException("There are no assets registered in the system.")
+            raise NotFoundException("Assets not found.", "There are no assets registered in the system.")
         return [
             {
                 "symbol" : a.symbol,
@@ -332,13 +351,13 @@ class ClientController:
         asset = AssetRepository.get(symbol)
 
         if asset is None:
-            raise NotFoundException("There is not an asset with this symbol.")
+            raise NotFoundException("Asset not found.", "There is not an asset with this symbol.")
         
         if isinstance(client, User):
             if not client.buy_asset(quantity, asset):
-                raise NotEnoughBalanceException("Not enough balance.")
+                raise NotEnoughBalanceException("Not enough balance.", "Your balance is not enough to buy this quantity of this asset.")
             if not asset.decrease_available_quantity(quantity):
-                raise AssetNotEnoughQuantityException("Asset is not available in this quantity.")
+                raise AssetNotEnoughQuantityException("Quantity unavailable.", "This asset is not available in this quantity.")
             
             AssetRepository.update_available_quantity(symbol, asset.available_quantity)
             ClientRepository.update_balance(id, client.balance)
@@ -356,7 +375,7 @@ class ClientController:
         asset = AssetRepository.get(symbol)
 
         if asset is None:
-            raise NotFoundException("There is not an asset with this symbol.")
+            raise NotFoundException("Asset not found.", "There is not an asset with this symbol.")
         
         if isinstance(client, User):
             ClientRepository.sell_asset(id, symbol, quantity)
@@ -379,7 +398,7 @@ class ClientController:
         
         if isinstance(client, User):
             if not client.deposit(amount):
-                raise Exception("Invalid amount to deposit. Value should be greater than 0.")
+                raise InvalidAmountException("Invalid amount to deposit", "Value should be greater than 0.")
             
             ClientRepository.update_balance(id, client.balance)
             return True
@@ -390,8 +409,7 @@ class ClientController:
 
         if isinstance(client, User):
             if not client.withdraw(amount):
-                #TODO specify somehow the which should be the type of exception (was amount < 0 or amount > balance)
-                raise Exception("Amount should be greater than 0 and you should have enough balance to withdraw.")
+                raise InvalidAmountException("Invalid amount to withdraw", "Amount should be greater than 0 and you should have enough balance to withdraw.")
             
             ClientRepository.update_balance(id, client.balance)
             return True
@@ -401,12 +419,12 @@ class ClientController:
 
         requester = ClientRepository.get(requester_id)
         if not isinstance(requester, Manager):
-            raise NotManagerException("Resource only accessible by managers.")
+            raise NotManagerException("Forbidden.", "Resource only accessible by managers.")
 
         transactions_list = ClientRepository.get_transactions()
 
         if transactions_list is None:
-            raise NotFoundException("There are no transactions.")
+            raise NotFoundException("Transactions not found.", "There are no transactions.")
         return [
             {
                 "id" : t["id"],
