@@ -12,27 +12,30 @@ from datetime import datetime
 ADD_ASSET = 1
 GET_ALL_ASSETS = 2
 GET_ASSET = 3
+GET_ASSET_SET = 4
 
-GET_ASSETS_BALANCE = 4
-BUY = 5
-SELL = 6
-DEPOSIT = 7
-WITHDRAW = 8
-GET_TRANSACTIONS = 9
+GET_ASSETS_BALANCE = 5
+BUY = 6
+SELL = 7
+DEPOSIT = 8
+WITHDRAW = 9
+GET_TRANSACTIONS = 10
 
 EXIT = 0
 
 MANAGER_SUPPORTED_COMMANDS = {
-    ADD_ASSET: "ADD_ASSET",
-    GET_ALL_ASSETS: "GET_ALL_ASSETS",
-    GET_ASSET: "GET_ASSET",
-    GET_TRANSACTIONS: "GET_TRANSACTIONS",
+    ADD_ASSET: "ADD ASSET",
+    GET_ALL_ASSETS: "GET ALL ASSETS",
+    GET_ASSET: "GET ASSET",
+    GET_ASSET_SET: "GET ASSET SET",
+    GET_TRANSACTIONS: "GET TRANSACTIONS",
     EXIT: "EXIT",
 }
 
 USER_SUPPORTED_COMMANDS = {
-    GET_ALL_ASSETS: "GET_ALL_ASSETS",
-    GET_ASSETS_BALANCE: "GET_ASSETS_BALANCE",
+    GET_ALL_ASSETS: "GET ALL ASSETS",
+    GET_ASSET_SET: "GET ASSET SET",
+    GET_ASSETS_BALANCE: "GET ASSETS BALANCE",
     BUY: "BUY",
     SELL: "SELL",
     DEPOSIT: "DEPOSIT",
@@ -221,6 +224,27 @@ class AssetController:
             "price" : asset.price,
             "available_quantity" : asset.available_quantity
         }
+
+    @staticmethod
+    def get_asset_set(symbols: list):
+        asset_list = []
+
+        for symbol in symbols:
+            asset = AssetRepository.get(symbol)
+            asset_list.append(asset)
+
+        # if list only has None fields
+        if len(list(filter(lambda a: a is not None, asset_list))) == 0:
+            raise NotFoundException("Assets not found.", "There are no assets registered in the system with those symbols.")
+        return [
+            {
+                "symbol" : a.symbol,
+                "name" : a.name,
+                "price" : a.price,
+                "available_quantity" : a.available_quantity
+            } if isinstance(a, Asset) else f"{a}: Asset not found"
+            for a in asset_list
+        ]
 
     @staticmethod
     def get_all_assets() -> list:

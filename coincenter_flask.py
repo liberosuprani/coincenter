@@ -9,9 +9,6 @@ from flask import Flask, request, make_response, session
 import json, ssl
 from coincenter_data import *
 
-
-#TODO incluir campo detail nos problem json
-
 app = Flask(__name__)
 app.secret_key = "chave secreta"
 
@@ -89,13 +86,19 @@ def asset(symbol=None):
     return r
 
         
+@app.route("/assetset/<symbols>", methods = ["GET"])
 @app.route("/assetset", methods = ["GET"])
-def asset_set():
+def asset_set(symbols=""):
     r = make_response()
     r.headers["Content-type"] = "application/json"
 
+
     try:
-        response = AssetController.get_all_assets()
+        if len(symbols) == 0:
+            response = AssetController.get_all_assets()
+        else:
+            symbols_list = symbols.split()
+            response = AssetController.get_asset_set(symbols_list)
         r.status_code = 200
         r.data = json.dumps(response)
     except NotFoundException as e:
@@ -137,7 +140,6 @@ def user():
     return_not_authenticated_error()
 
     response = ClientController.get_user_balance_assets(session["client_id"])
-    print(response)
     r.status_code = 200
     r.data = json.dumps(response)
 
