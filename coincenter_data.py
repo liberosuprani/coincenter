@@ -206,6 +206,9 @@ class AssetController:
 
     @staticmethod
     def create_new_asset(symbol: str, name: str, price: float, available_quantity: int):
+        """
+        Creates a new asset.
+        """
         asset = AssetRepository.get(symbol)
 
         if asset is not None:
@@ -216,6 +219,9 @@ class AssetController:
 
     @staticmethod
     def get_asset(symbol: str) -> dict:
+        """
+        Returns the asset with the given symbol.
+        """
         asset = AssetRepository.get(symbol)
         if asset is None:
             raise NotFoundException("Asset not found.", "There is not an asset with this symbol.")
@@ -228,6 +234,9 @@ class AssetController:
 
     @staticmethod
     def get_asset_set(symbols: list):
+        """
+        Returns a list with the assets corresponding to the given symbols.
+        """
         asset_list = []
 
         for symbol in symbols:
@@ -249,6 +258,9 @@ class AssetController:
 
     @staticmethod
     def get_all_assets() -> list:
+        """
+        Returns all the assets that exist in the database.
+        """
         asset_list = AssetRepository.get_all()
 
         if asset_list is None:
@@ -266,6 +278,9 @@ class AssetController:
 class AssetRepository:
     @staticmethod
     def add(asset: Asset):
+        """
+        Stores a new asset in the database.
+        """
         db = get_db()
         cursor = db.cursor()
         
@@ -276,6 +291,9 @@ class AssetRepository:
 
     @staticmethod
     def get(symbol: str) -> Asset:
+        """
+        Returns an asset with the given symbol from the database.
+        """
         db = get_db()
         cursor = db.cursor()
 
@@ -291,6 +309,9 @@ class AssetRepository:
 
     @staticmethod
     def get_all() -> list:
+        """
+        Returns all the assets that exist in the database.
+        """
         db = get_db()
         cursor = db.cursor()
 
@@ -308,6 +329,9 @@ class AssetRepository:
 
     @staticmethod
     def get_by_user_id(id: int) -> list:
+        """
+        Returns the user - with the given id - from the database.
+        """
         db = get_db()
         cursor = db.cursor()
 
@@ -326,6 +350,9 @@ class AssetRepository:
     
     @staticmethod
     def update_available_quantity(symbol: str, quantity: float):
+        """
+        Updates the field available_quantity in the database for an asset with the given symbol.
+        """
         db = get_db()
         cursor = db.cursor()
 
@@ -338,6 +365,9 @@ class ClientController:
 
     @staticmethod
     def login(id: int):
+        """
+        Sets the session variable 'client_id' to the given id.
+        """
         client = ClientRepository.get(id)   
 
         if client is None:
@@ -352,6 +382,9 @@ class ClientController:
     
     @staticmethod
     def get_user_balance_assets(id: int) -> dict:
+        """
+        Returns the balance and assets from a user with the given id.
+        """
         client = ClientRepository.get(id)
 
         if isinstance(client, User):
@@ -373,6 +406,9 @@ class ClientController:
 
     @staticmethod
     def buy_asset(id:int, symbol: str, quantity: float) -> bool:
+        """
+        Registers a new buy transaction for the user with the given id.
+        """
         client = ClientRepository.get(id)
         asset = AssetRepository.get(symbol)
 
@@ -397,6 +433,9 @@ class ClientController:
 
     @staticmethod
     def sell_asset(id:int, symbol: str, quantity: float) -> bool:
+        """
+        Registers a new sell transaction for the user with the given id.
+        """
         client = ClientRepository.get(id)
         asset = AssetRepository.get(symbol)
 
@@ -420,6 +459,9 @@ class ClientController:
 
     @staticmethod
     def deposit(id: int, amount: float) -> bool:
+        """
+        Registers a new deposit for the user with the given id.
+        """
         client = ClientRepository.get(id)
         
         if isinstance(client, User):
@@ -431,6 +473,9 @@ class ClientController:
 
     @staticmethod
     def withdraw(id: int, amount: float) -> bool:
+        """
+        Registers a new withdraw for the user with the given id.
+        """
         client = ClientRepository.get(id)
 
         if isinstance(client, User):
@@ -442,6 +487,9 @@ class ClientController:
 
     @staticmethod
     def get_transactions(requester_id: int) -> list:
+        """
+        Returns all the transactions.
+        """
 
         requester = ClientRepository.get(requester_id)
         if not isinstance(requester, Manager):
@@ -465,12 +513,12 @@ class ClientController:
         ]
 
 
-        
-
-
 class ClientRepository:
     @staticmethod
     def add(client: Client):
+        """
+        Adds a client to the database.
+        """
         db = get_db()
         cursor = db.cursor()
 
@@ -485,6 +533,9 @@ class ClientRepository:
 
     @staticmethod
     def get(id: int) -> Client:
+        """
+        Returns a client with the given id from the database.
+        """
         db = get_db()
         cursor = db.cursor()
 
@@ -502,6 +553,9 @@ class ClientRepository:
 
     @staticmethod
     def update_balance(id: int, balance: float):
+        """
+        Updates a user's balance in the database.
+        """
         db = get_db()
         cursor = db.cursor()
 
@@ -511,6 +565,10 @@ class ClientRepository:
         
     @staticmethod
     def buy_asset(id: int, asset_symbol: str, quantity: float):
+        """
+        Registers a new buy transaction in the database for the user with the given id.
+        """
+        
         db = get_db()
         cursor = db.cursor()
 
@@ -532,6 +590,9 @@ class ClientRepository:
 
     @staticmethod
     def sell_asset(id: int, asset_symbol: str, quantity: float):
+        """
+        Registers a new sell transaction in the database for the user with the given id.
+        """
         db = get_db()
         cursor = db.cursor()
 
@@ -558,6 +619,9 @@ class ClientRepository:
 
     @staticmethod
     def add_transaction(client_id: int, asset_symbol: str, transaction_type: str, quantity: float, price: float, current_date: str):
+        """
+        Registers a new transaction for the user with the given id.
+        """
         db = get_db()
         cursor = db.cursor()
 
@@ -569,6 +633,9 @@ class ClientRepository:
 
     @staticmethod
     def get_transactions() -> list:
+        """
+        Returns all the transactions that exist in the database.
+        """
         db = get_db()
         cursor = db.cursor()
 

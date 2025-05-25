@@ -3,8 +3,6 @@ Aplicações Distribuídas - Projeto 3 - coincenter_flask.py
 Número de aluno: 62220
 """
 
-#TODO get_assets_balance do user não deveria mostrar a available_quantity de cada asset que ele tem
-
 from flask import Flask, request, make_response, session
 import json, ssl
 from coincenter_data import *
@@ -14,8 +12,10 @@ app = Flask(__name__)
 app.secret_key = "chave secreta"
 
 def return_not_authenticated_error():
+    """
+    Returns an error response to the client if they are not authenticated.
+    """
     r = make_response()
-    r.headers["Content-type"] = "application/json"
 
     if "client_id" not in session:
         r.headers["Content-type"] = "application/api-problem+json"
@@ -29,12 +29,14 @@ def return_not_authenticated_error():
     
     return False
 
+
 @app.route("/asset", methods = ["POST"])
 @app.route("/asset/<string:symbol>", methods = ["GET"])
 def asset(symbol=None):
     r = make_response()
     r.headers["Content-type"] = "application/json"
 
+    # gets an asset
     if request.method == "GET":
         try:
             response = AssetController.get_asset(symbol)
@@ -49,6 +51,7 @@ def asset(symbol=None):
                 "detail" : str(e)
             })
 
+    # creates a new asset
     if request.method == "POST":
         try:
             req = request.get_json()
@@ -94,9 +97,8 @@ def asset_set(symbols=""):
     r = make_response()
     r.headers["Content-type"] = "application/json"
 
-
     try:
-        if len(symbols) == 0:
+        if len(symbols) == 0:   # if no symbols were provided, return all the assets
             response = AssetController.get_all_assets()
         else:
             symbols_list = symbols.split()

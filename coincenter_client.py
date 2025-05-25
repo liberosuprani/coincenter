@@ -11,7 +11,6 @@ from kazoo.recipe.watchers import ChildrenWatch
 session = requests.Session()
 HOST = "https://localhost:5000/"
 
-first_watch = True
 
 def validate_manager_command(command: int, args: list) -> bool:
     """
@@ -53,6 +52,9 @@ def validate_user_command(command: int, args: list) -> bool:
     if command == consts.GET_ALL_ASSETS or command == consts.GET_ASSETS_BALANCE:
         return len(args) == 0
     
+    if command == consts.GET_ASSET:
+        return len(args) == 1 and isinstance(args[0], str)
+
     if command == consts.GET_ASSET_SET:
         return len(args) >= 1
 
@@ -107,13 +109,20 @@ def manager_menu(client_id):
         while not exit_loop and command not in consts.MANAGER_SUPPORTED_COMMANDS.keys():
             send_request = None
             args = []
-            command = int(input("command > "))
+            try:
+                command = int(input("command > "))
+            except ValueError as e:
+                print("Invalid command.")
+                continue
 
             if command == consts.ADD_ASSET:
                 args.append(input("Asset name > "))     # asset's name
                 args.append(input("Asset symbol > ").upper())    # asset's symbol 
-                args.append(float(input("Asset price > ")))   # asset's price (cast to float)
-                args.append(float(input("Available quantity > ")))    # asset's available amount
+                try:
+                    args.append(float(input("Asset price > ")))   # asset's price (cast to float)
+                    args.append(float(input("Available quantity > ")))    # asset's available amount
+                except ValueError as e:
+                    print("Invalid price or quantity.")
                 send_request = manager_add_asset
 
             if command == consts.GET_ALL_ASSETS:
@@ -140,7 +149,7 @@ def manager_menu(client_id):
             else:
                 exit_loop = True
                 r = send_request(args)
-                print(r.text)
+                print("\n", r.text)
 
 
 def user_menu(client_id):
@@ -151,6 +160,7 @@ def user_menu(client_id):
     while not exit_program:
         print("\n===============")
         print(f"{consts.GET_ALL_ASSETS}) {consts.USER_SUPPORTED_COMMANDS[consts.GET_ALL_ASSETS]}\n"
+            f"{consts.GET_ASSET}) {consts.MANAGER_SUPPORTED_COMMANDS[consts.GET_ASSET]}\n"
             f"{consts.GET_ASSET_SET}) {consts.USER_SUPPORTED_COMMANDS[consts.GET_ASSET_SET]}\n"
             f"{consts.GET_ASSETS_BALANCE}) {consts.USER_SUPPORTED_COMMANDS[consts.GET_ASSETS_BALANCE]}\n"
             f"{consts.BUY}) {consts.USER_SUPPORTED_COMMANDS[consts.BUY]}\n"
@@ -164,10 +174,18 @@ def user_menu(client_id):
         while not exit_loop and command not in consts.USER_SUPPORTED_COMMANDS.keys(): 
             send_request = None
             args = []
-            command = int(input("command > "))
-            
+            try:
+                command = int(input("command > "))
+            except ValueError as e:
+                print("Invalid command.")
+                continue
+
             if command == consts.GET_ALL_ASSETS:
                 send_request = get_all_assets
+
+            if command == consts.GET_ASSET:
+                args.append(input("Asset symbol > ").upper())
+                send_request = get_asset
 
             if command == consts.GET_ASSET_SET:
                 args = input("Symbols (separated by space): ").strip().split()
@@ -179,11 +197,19 @@ def user_menu(client_id):
 
             if command == consts.BUY or command == consts.SELL:
                 args.append(input("Asset symbol > ").upper())   # asset's symbol 
-                args.append(float(input("Quantity > ")))    # quantity to buy / sell
+                try:
+                    args.append(float(input("Quantity > ")))    # quantity to buy / sell
+                except ValueError as e:
+                    print("Invalid quantity.")
+                    continue
                 send_request = user_buy_asset if command == consts.BUY else user_sell_asset 
                 
             if command == consts.DEPOSIT or command == consts.WITHDRAW:
-                args.append(float(input("Amount > ")))    # amount to deposit / withdraw
+                try:
+                    args.append(float(input("Amount > ")))    # amount to deposit / withdraw
+                except ValueError as e:
+                    print("Invalid quantity.")
+                    continue
                 send_request = user_deposit if command == consts.DEPOSIT else user_withdraw 
 
             if command == consts.EXIT:
@@ -195,7 +221,7 @@ def user_menu(client_id):
             else:
                 exit_loop = True
                 r = send_request(args)
-                print(r.text)
+                print("\n", r.text)
 
 
 ########################### SEND FUNCTIONS
@@ -268,6 +294,7 @@ def get_asset(args: list):
 
 ###########################
 
+first_watch = True
     
 def login_menu():
     client_id = int(input("----------\nBem-vindo ao coincenter.\nIndique seu id: "))
@@ -294,6 +321,8 @@ def login_menu():
                 assets = sorted(assets, key=lambda a : int(a.split("/")[-1].split("-")[1]))
                 new_asset = assets[-1]
 
+                # the first split gets the symbol along with the sequence number
+                # the second split gets the symbol
                 asset_symbol = new_asset.split("/")[-1].split("-")[0]
                 print(f"\n\n(ALERT)\nNew asset was added: {asset_symbol}\n")
             elif first_watch:
