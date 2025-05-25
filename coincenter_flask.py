@@ -1,5 +1,5 @@
 """
-Aplicações Distribuídas - Projeto 2 - coincenter_server.py
+Aplicações Distribuídas - Projeto 3 - coincenter_flask.py
 Número de aluno: 62220
 """
 
@@ -8,6 +8,7 @@ Número de aluno: 62220
 from flask import Flask, request, make_response, session
 import json, ssl
 from coincenter_data import *
+from kazoo.client import KazooClient
 
 app = Flask(__name__)
 app.secret_key = "chave secreta"
@@ -27,7 +28,6 @@ def return_not_authenticated_error():
         return r
     
     return False
-
 
 @app.route("/asset", methods = ["POST"])
 @app.route("/asset/<string:symbol>", methods = ["GET"])
@@ -66,6 +66,8 @@ def asset(symbol=None):
                 "title" : "Asset was created successfully.",
                 "status" : 201
             })
+            zk.create(f"/asset/{symbol}-", ephemeral=False, sequence=True)
+
         except KeyError:
             r.headers["Content-type"] = "application/api-problem+json"
             r.status_code = 400
@@ -302,4 +304,9 @@ if __name__ == "__main__":
     context.verify_mode = ssl.CERT_REQUIRED
     context.load_verify_locations(cafile="root.pem")
     context.load_cert_chain(certfile="serv.crt", keyfile="serv.key")
+
+    zk = KazooClient(hosts="127.0.0.1:2181")
+    zk.start()
+    zk.ensure_path("/asset")
+
     app.run("localhost" , ssl_context=context, debug=True)

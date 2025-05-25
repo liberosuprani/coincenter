@@ -1,7 +1,8 @@
 """
-Aplicações Distribuídas - Projeto 2 - coincenter_data.py
+Aplicações Distribuídas - Projeto 3 - coincenter_data.py
 Número de aluno: 62220
 """
+
 
 from abc import ABC
 from setup_db import get_db

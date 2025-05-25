@@ -1,14 +1,17 @@
 """
-Aplicações Distribuídas - Projeto 2 - coincenter_client.py
+Aplicações Distribuídas - Projeto 3 - coincenter_client.py
 Número de aluno: 62220
 """
 
-# import sys
 import coincenter_data as consts
 import requests, json
+from kazoo.client import KazooClient
+from kazoo.recipe.watchers import ChildrenWatch
 
 session = requests.Session()
 HOST = "https://localhost:5000/"
+
+first_watch = True
 
 def validate_manager_command(command: int, args: list) -> bool:
     """
@@ -263,6 +266,7 @@ def get_asset(args: list):
 
 ###########################
 
+    
 def login_menu():
     client_id = int(input("----------\nBem-vindo ao coincenter.\nIndique seu id: "))
     response = session.post("https://localhost:5000/login", json = {"client_id":client_id}, verify="root.pem", cert=("cli.crt", "cli.key"))
@@ -276,6 +280,23 @@ def login_menu():
     if client_id == 0:
         manager_menu(client_id)
     else:
+        zk = KazooClient(hosts="127.0.0.1:2181")
+        zk.start()
+        @ChildrenWatch(zk, "/asset")
+        def watch_assets(assets):
+            global first_watch
+            if len(assets) > 0 and not first_watch:
+
+                # the first split gets the symbol along with the sequence number
+                # the second split gets the sequence number
+                assets = sorted(assets, key=lambda a : int(a.split("/")[-1].split("-")[1]))
+                new_asset = assets[-1]
+
+                asset_symbol = new_asset.split("/")[-1].split("-")[0]
+                print(f"\n\n(ALERT)\nNew asset was added: {asset_symbol}\n")
+            elif first_watch:
+                first_watch = False
+
         user_menu(client_id)
 
 def main():

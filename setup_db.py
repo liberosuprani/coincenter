@@ -1,3 +1,8 @@
+"""
+Aplicações Distribuídas - Projeto 3 - setup_db.py
+Número de aluno: 62220
+"""
+
 import sqlite3
 from os.path import isfile
 from flask import g
@@ -12,8 +17,6 @@ def get_db(db_name = "coincenter.db"):
         with open("schema.sql", "r") as f:
             schema = f.read()
             cursor.executescript(schema)
-            # inserts = "INSERT INTO Assets(asset_symbol, name, price, available_quantity)" \
-            # " VALUES (?, ?, ?, ?)"
 
     if "db" not in g:
         g.db = db_connection
