@@ -311,7 +311,7 @@ class AssetRepository:
         db = get_db()
         cursor = db.cursor()
 
-        query = "SELECT asset_symbol FROM ClientAssets WHERE client_id = ?"
+        query = "SELECT asset_symbol, quantity FROM ClientAssets WHERE client_id = ?"
         cursor.execute(query, (id,))
         rows = cursor.fetchall()
 
@@ -320,6 +320,7 @@ class AssetRepository:
             return None
         for row in rows:
             asset = AssetRepository.get(row["asset_symbol"])
+            asset.available_quantity = row["quantity"]
             asset_list.append(asset)
         return asset_list
     
@@ -363,7 +364,7 @@ class ClientController:
                         "symbol" : a.symbol,
                         "name" : a.name,
                         "price" : a.price,
-                        "available_quantity" : a.available_quantity
+                        "quantity" : a.available_quantity
                     } for a in user_assets ] 
                     if user_assets is not None else "No assets"
             }
@@ -497,7 +498,6 @@ class ClientRepository:
         if row["is_manager"] == 1:
             return Manager(row["client_id"])
         
-        print("row balance = ", row["balance"])
         return User(row["client_id"], row["balance"])
 
     @staticmethod

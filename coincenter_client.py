@@ -37,6 +37,8 @@ def validate_manager_command(command: int, args: list) -> bool:
         return len(args) == 1 and isinstance(args[0], str)
     if command == consts.GET_ASSET_SET:
         return len(args) >= 1
+    if command == consts.GET_TRANSACTIONS:
+        return len(args) == 0
     if command == consts.EXIT:
         return len(args) == 0
     
